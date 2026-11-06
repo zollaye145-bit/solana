@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meme Sniper</title>
+<script src="https://unpkg.com/@solana/web3.js@1.98.0/lib/index.iife.min.js"></script>
+<style>
+:root{--bg:#0b0d12;--card:#141821;--line:#232a36;--txt:#e7ebf2;--mut:#8a93a5;--acc:#9b7bff;--ok:#2ecc8f;--bad:#ff5c6c;--warn:#f5b84a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+h1{font-size:18px;margin:0}h1 span{color:var(--acc)}
+main{max-width:1100px;margin:0 auto;padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:860px){main{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.card h2{font-size:15px;margin:0 0 10px;display:flex;justify-content:space-between;align-items:center}
+.full{grid-column:1/-1}
+button{background:#232a36;color:var(--txt);border:1px solid #2f3746;border-radius:8px;padding:8px 12px;cursor:pointer;font:inherit}
+button:hover{border-color:var(--acc)}button.pri{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+button.ok{background:var(--ok);border-color:var(--ok);color:#06140e;font-weight:600}
+button.bad{background:var(--bad);border-color:var(--bad);color:#fff;font-weight:600}
+button:disabled{opacity:.5;cursor:not-allowed}
+input,select{background:#0e1118;color:var(--txt);border:1px solid #2f3746;border-radius:8px;padding:8px 10px;font:inherit;width:100%}
+label{font-size:12px;color:var(--mut);display:block;margin:8px 0 4px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>input{flex:1;min-width:160px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:#0e1118;border:1px solid var(--line);border-radius:8px;padding:8px}.stat b{display:block;font-size:15px}.stat small{color:var(--mut)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.chip{padding:4px 9px;border-radius:999px;font-size:12px;border:1px solid var(--line);background:#0e1118}
+.chip.ok{color:var(--ok);border-color:#1f5a43}.chip.bad{color:var(--bad);border-color:#6a2a33}.chip.wait{color:var(--warn);border-color:#5e4a20}
+.mut{color:var(--mut)}.small{font-size:12px}.green{color:var(--ok)}.red{color:var(--bad)}
+.amts button{padding:6px 10px}.amts button.sel{border-color:var(--acc);color:var(--acc)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{text-align:left;padding:6px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mut);font-weight:500}
+#log{max-height:220px;overflow:auto;font:12px ui-monospace,Menlo,monospace;background:#0e1118;border-radius:8px;padding:8px;white-space:pre-wrap}
+.switch{display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--txt);font-size:13px;margin:6px 0}.switch input{width:auto}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--mut);display:inline-block}.dot.on{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+a{color:var(--acc)}
+footer{max-width:1100px;margin:0 auto;padding:0 16px 30px;color:var(--mut);font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Meme <span>Sniper</span> · Solana</h1>
+  <div class="row">
+    <span id="walletLbl" class="mut small">Pas connecté</span>
+    <span class="mut small">Solde: <b id="solBal">—</b></span>
+    <button onclick="refreshBal()">↻</button>
+    <button class="pri" id="connectBtn" onclick="connect()">Connecter Solflare</button>
+  </div>
+</header>
+
+<main>
+  <!-- TOKEN -->
+  <section class="card">
+    <h2>Token</h2>
+    <div class="row">
+      <input id="tokInput" placeholder="Adresse mint, lien pump.fun ou DexScreener">
+      <button class="pri" onclick="loadToken()">Charger</button>
+    </div>
+    <div id="tokBox" class="mut small" style="margin-top:10px">Aucun token chargé.</div>
+  </section>
+
+  <!-- TRADE -->
+  <section class="card">
+    <h2>Trade</h2>
+    <label>Acheter (SOL)</label>
+    <div class="row amts" id="amts"></div>
+    <div class="row" style="margin-top:8px">
+      <input id="buyAmt" type="number" step="0.01" value="0.1">
+      <button class="ok" onclick="buy()">Acheter</button>
+    </div>
+    <label>Vendre</label>
+    <div class="row">
+      <button onclick="sell(25)">25%</button><button onclick="sell(50)">50%</button><button class="bad" onclick="sell(100)">100%</button>
+      <span class="mut small">Tu détiens: <b id="holdLbl">—</b></span>
+    </div>
+    <div class="grid2" style="margin-top:6px">
+      <div><label>Take profit (%)</label><input id="tp" type="number" value="100"></div>
+      <div><label>Stop loss (%)</label><input id="sl" type="number" value="35"></div>
+    </div>
+    <label class="switch"><input type="checkbox" id="autoSell" checked> Vente auto quand TP/SL touché (Solflare demande confirmation)</label>
+  </section>
+
+  <!-- SNIPER -->
+  <section class="card full">
+    <h2><span><span class="dot" id="snDot"></span> Sniper</span>
+      <span class="row"><button class="ok" id="snBtn" onclick="toggleSniper()">Démarrer</button></span></h2>
+    <p class="mut small" style="margin-top:0">Scanne les tokens Solana récents (DexScreener), applique tous les filtres, et achète (ou alerte) dès qu'un token passe tout. Chaque achat s'ouvre dans Solflare pour signature.</p>
+    <div class="grid3">
+      <div><label>Liquidité min ($)</label><input id="fLiq" type="number" value="40000"></div>
+      <div><label>Market cap min ($)</label><input id="fMcMin" type="number" value="50000"></div>
+      <div><label>Market cap max ($)</label><input id="fMcMax" type="number" value="5000000"></div>
+      <div><label>Ratio buys/sells 5m min</label><input id="fRatio" type="number" step="0.1" value="1.3"></div>
+      <div><label>Buys 5m min</label><input id="fBuys" type="number" value="40"></div>
+      <div><label>Pump vertical: 5m max (%)</label><input id="fV5" type="number" value="30"></div>
+      <div><label>Pump vertical: 1h max (%)</label><input id="fV1h" type="number" value="200"></div>
+      <div><label>Top holder max (%)</label><input id="fTop1" type="number" step="0.5" value="5"></div>
+      <div><label>Top 10 holders max (%)</label><input id="fTop10" type="number" value="30"></div>
+      <div><label>Dev max (%)</label><input id="fDev" type="number" step="0.5" value="5"></div>
+      <div><label>Âge min (minutes)</label><input id="fAgeMin" type="number" value="10"></div>
+      <div><label>Âge max (heures)</label><input id="fAgeMax" type="number" value="24"></div>
+    </div>
+    <div class="grid3">
+      <div><label>Montant par snipe (SOL)</label><input id="snAmt" type="number" step="0.01" value="0.05"></div>
+      <div><label>Max achats / session</label><input id="snMax" type="number" value="3"></div>
+      <div><label>Intervalle scan (s)</label><input id="snInt" type="number" value="20"></div>
+    </div>
+    <label class="switch"><input type="checkbox" id="snAuto"> Achat auto (sinon: alerte + bouton)</label>
+    <label class="switch"><input type="checkbox" id="snDevUnknown"> Accepter si Dev % inconnu</label>
+    <table style="margin-top:10px"><thead><tr><th>Token</th><th>Liq / MC</th><th>5m</th><th>Âge</th><th>Checks</th><th></th></tr></thead><tbody id="snTable"><tr><td colspan="6" class="mut">Sniper arrêté.</td></tr></tbody></table>
+  </section>
+
+  <!-- POSITIONS + LOG -->
+  <section class="card">
+    <h2>Mes trades <button class="small" onclick="clearTrades()">Effacer</button></h2>
+    <div id="trades" class="small mut">Aucun trade pour l'instant.</div>
+  </section>
+  <section class="card">
+    <h2>Réglages & log</h2>
+    <div class="grid2">
+      <div><label>Slippage max (%)</label><input id="slip" type="number" value="15"></div>
+      <div><label>Priority fee max (SOL)</label><input id="prio" type="number" step="0.0005" value="0.002"></div>
+    </div>
+    <label>RPC (Helius / QuickNode conseillé, le public limite vite)</label>
+    <input id="rpc" placeholder="https://api.mainnet-beta.solana.com">
+    <label>Clé API Jupiter (optionnel, gratuite sur developers.jup.ag/portal)</label>
+    <input id="jupKey" placeholder="vide = lite-api gratuit">
+    <label>Log</label>
+    <div id="log"></div>
+  </section>
+</main>
+<footer>Kol transaction katsigniha nta f Solflare. Had site ma kaychouf w ma kaykhzen 7ta clé privée. Les swaps kaydouzou men Jupiter. Memecoins y9dro ywselou l 0 f d9i9a — ma t7ett ghir li m9ad tkhser.</footer>
+
+<script>
+const W = solanaWeb3;
+const SOL_MINT = 'So11111111111111111111111111111111111111112';
+const LAMPORTS = 1e9;
+const $ = id => document.getElementById(id);
+const fmt$ = n => n==null?'—':'$'+(n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':(+n).toFixed(n<1?6:2));
+const pct = n => n==null?'—':(n>0?'+':'')+(+n).toFixed(2)+'%';
+const short = a => a? a.slice(0,4)+'…'+a.slice(-4):'';
+const ageStr = ms => { const m=ms/60000; return m<60? Math.round(m)+' min' : m<1440? (m/60).toFixed(1)+' h' : (m/1440).toFixed(1)+' j'; };
+
+/* ---------- persistence of settings ---------- */
+const SETTINGS = ['fLiq','fMcMin','fMcMax','fRatio','fBuys','fV5','fV1h','fTop1','fTop10','fDev','fAgeMin','fAgeMax','snAmt','snMax','snInt','slip','prio','rpc','jupKey','tp','sl','buyAmt'];
+const CHECKS = ['snAuto','snDevUnknown','autoSell'];
+function load(k,d){ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v);}catch{return d;} }
+function save(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch{} }
+const saved = load('ms_settings',{});
+SETTINGS.forEach(id=>{ if(saved[id]!=null) $(id).value=saved[id]; $(id).addEventListener('change',persist); });
+CHECKS.forEach(id=>{ if(saved[id]!=null) $(id).checked=saved[id]; $(id).addEventListener('change',persist); });
+function persist(){ const o={}; SETTINGS.forEach(id=>o[id]=$(id).value); CHECKS.forEach(id=>o[id]=$(id).checked); save('ms_settings',o); conn=null; }
+const num = id => parseFloat($(id).value);
+
+/* ---------- log ---------- */
+function log(msg, cls=''){ const t=new Date().toLocaleTimeString(); const d=document.createElement('div'); if(cls) d.className=cls; d.textContent=`[${t}] ${msg}`; $('log').prepend(d); }
+
+/* ---------- connection ---------- */
+let conn=null;
+function rpc(){ if(!conn) conn=new W.Connection($('rpc').value.trim()||'https://api.mainnet-beta.solana.com','confirmed'); return conn; }
+
+/* ---------- wallet ---------- */
+let wallet=null;
+async function connect(){
+  const p=window.solflare;
+  if(!p){ alert('Solflare introuvable. Installe l’extension ou ouvre le site dans le navigateur de l’app Solflare.'); return; }
+  try{ await p.connect(); wallet=p.publicKey; $('walletLbl').textContent=short(wallet.toBase58()); $('connectBtn').textContent='Connecté'; log('Wallet connecté '+wallet.toBase58()); refreshBal(); refreshHold(); }
+  catch(e){ log('Connexion refusée: '+e.message,'red'); }
+}
+async function refreshBal(){ if(!wallet) return; try{ const b=await rpc().getBalance(wallet); $('solBal').textContent=(b/LAMPORTS).toFixed(4)+' SOL'; }catch(e){ log('Solde: '+e.message,'red'); } }
+
+/* ---------- DexScreener ---------- */
+async function ds(path){ const r=await fetch('https://api.dexscreener.com'+path); if(!r.ok) throw new Error('DexScreener '+r.status); return r.json(); }
+function bestPair(pairs){ return (pairs||[]).filter(p=>p.chainId==='solana').sort((a,b)=>(b.liquidity?.usd||0)-(a.liquidity?.usd||0))[0]; }
+async function pairsForMints(mints){ // up to 30
+  const out={}; if(!mints.length) return out;
+  const arr=await ds('/tokens/v1/solana/'+mints.join(','));
+  (arr||[]).forEach(p=>{ const m=p.baseToken.address; if(!out[m] || (p.liquidity?.usd||0)>(out[m].liquidity?.usd||0)) out[m]=p; });
+  return out;
+}
+async function resolveInput(s){
+  s=s.trim(); if(!s) throw new Error('Entrée vide');
+  let m;
+  if((m=s.match(/pump\.fun\/(?:coin\/)?([1-9A-HJ-NP-Za-km-z]{32,44})/))) return m[1];
+  if((m=s.match(/dexscreener\.com\/solana\/([1-9A-HJ-NP-Za-km-z]{32,44})/))){
+    const r=await ds('/latest/dex/pairs/solana/'+m[1]); const p=(r.pairs||[])[0]||r.pair;
+    if(p) return p.baseToken.address; return m[1];
+  }
+  if(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s)) return s;
+  throw new Error('Format non reconnu');
+}
+
+/* ---------- on-chain checks ---------- */
+async function mintInfo(mint){
+  const r=await rpc().getParsedAccountInfo(new W.PublicKey(mint));
+  const info=r.value?.data?.parsed?.info; if(!info) throw new Error('Mint introuvable');
+  return {mintAuth:info.mintAuthority, freezeAuth:info.freezeAuthority, supply:+info.supply, decimals:info.decimals, program:r.value.owner.toBase58()};
+}
+async function holders(mint, supply){
+  const r=await rpc().getTokenLargestAccounts(new W.PublicKey(mint));
+  const accs=r.value.slice(0,20);
+  const infos=await rpc().getMultipleParsedAccounts(accs.map(a=>a.address));
+  const list=[];
+  accs.forEach((a,i)=>{
+    const owner=infos.value[i]?.data?.parsed?.info?.owner; if(!owner) return;
+    // PDA (hors courbe) = pool / bonding curve → on l'exclut
+    let onCurve=true; try{ onCurve=W.PublicKey.isOnCurve(new W.PublicKey(owner).toBytes()); }catch{}
+    if(!onCurve) return;
+    list.push({owner, pct:+a.amount/supply*100});
+  });
+  const top1=list[0]?.pct||0, top10=list.slice(0,10).reduce((s,h)=>s+h.pct,0);
+  return {top1, top10, list};
+}
+async function devPct(mint, supply){
+  // créateur via pump.fun (si dispo), puis son solde
+  let creator=null;
+  for(const u of ['https://frontend-api-v3.pump.fun/coins/'+mint,'https://frontend-api.pump.fun/coins/'+mint]){
+    try{ const r=await fetch(u); if(r.ok){ const j=await r.json(); creator=j.creator; if(creator) break; } }catch{}
+  }
+  if(!creator) return {pct:null, creator:null};
+  try{
+    const r=await rpc().getParsedTokenAccountsByOwner(new W.PublicKey(creator),{mint:new W.PublicKey(mint)});
+    const amt=r.value.reduce((s,a)=>s+ +a.account.data.parsed.info.tokenAmount.amount,0);
+    return {pct:amt/supply*100, creator};
+  }catch{ return {pct:null, creator}; }
+}
+
+/* ---------- full evaluation ---------- */
+function dexChecks(p){
+  const liq=p.liquidity?.usd||0, b=p.txns?.m5?.buys||0, s=p.txns?.m5?.sells||0;
+  const c5=p.priceChange?.m5||0, c1=p.priceChange?.h1||0;
+  const age=p.pairCreatedAt? Date.now()-p.pairCreatedAt : null;
+  const ratio=s? b/s : (b?99:0);
+  return [
+    {k:'liq',  label:'Liquidité ≥ '+fmt$(num('fLiq')), ok: liq>=num('fLiq'), d:fmt$(liq)},
+    {k:'flux', label:'Flux buys/sells', ok: ratio>=num('fRatio') && b>=num('fBuys'), d:`${b}/${s}`},
+    {k:'vert', label:'Pas de pump vertical', ok: c5<=num('fV5') && c1<=num('fV1h'), d:`5m ${pct(c5)} · 1h ${pct(c1)}`},
+    {k:'age',  label:'Âge', ok: age!=null && age>=num('fAgeMin')*60000 && age<=num('fAgeMax')*3600000, d: age?ageStr(age):'?'},
+  ];
+}
+async function chainChecks(mint){
+  const mi=await mintInfo(mint);
+  const [h,dv]=await Promise.all([holders(mint,mi.supply).catch(e=>({err:e.message})), devPct(mint,mi.supply)]);
+  const devOk = dv.pct==null ? ($('snDevUnknown').checked?true:null) : dv.pct<=num('fDev');
+  return {mi, checks:[
+    {k:'mint',  label:'Mint révoquée', ok: !mi.mintAuth},
+    {k:'freeze',label:'Freeze révoqué', ok: !mi.freezeAuth},
+    {k:'top',   label:'Top holders', ok: h.err? null : (h.top1<=num('fTop1') && h.top10<=num('fTop10')), d: h.err? 'RPC limité' : `top1 ${h.top1.toFixed(1)}% · top10 ${h.top10.toFixed(1)}%`},
+    {k:'dev',   label:'Dev %', ok: devOk, d: dv.pct==null? 'inconnu' : dv.pct.toFixed(2)+'%'},
+  ]};
+}
+const chipsHtml = cs => cs.map(c=>`<span class="chip ${c.ok===true?'ok':c.ok===false?'bad':'wait'}" title="${c.d||''}">${c.ok===true?'✓':c.ok===false?'✗':'?'} ${c.label}${c.d?' <span class=mut>'+c.d+'</span>':''}</span>`).join('');
+
+/* ---------- token panel ---------- */
+let cur=null; // {mint, pair, decimals, program}
+async function loadToken(input){
+  try{
+    const mint=await resolveInput(input||$('tokInput').value);
+    $('tokInput').value=mint; $('tokBox').innerHTML='Chargement…';
+    const pairs=await pairsForMints([mint]); const p=pairs[mint];
+    if(!p) throw new Error('Pas de pair trouvée sur DexScreener (trop récent ?)');
+    cur={mint,pair:p};
+    renderToken([...dexChecks(p), {label:'Checks on-chain…',ok:null}]);
+    const cc=await chainChecks(mint); cur.decimals=cc.mi.decimals; cur.program=cc.mi.program;
+    renderToken([...dexChecks(p), ...cc.checks]);
+    refreshHold();
+  }catch(e){ $('tokBox').innerHTML=`<span class="red">${e.message}</span>`; }
+}
+function renderToken(checks){
+  const p=cur.pair;
+  $('tokBox').innerHTML=`
+   <div class="row" style="justify-content:space-between"><div><b style="font-size:16px">$${p.baseToken.symbol}</b> <span class="mut">${p.baseToken.name} · ${short(cur.mint)}</span></div>
+   <a href="${p.url}" target="_blank" rel="noopener">Chart ↗</a></div>
+   <div class="grid3" style="margin-top:8px">
+     <div class="stat"><small>Prix</small><b>$${(+p.priceUsd).toPrecision(4)}</b></div>
+     <div class="stat"><small>Market cap</small><b>${fmt$(p.marketCap||p.fdv)}</b></div>
+     <div class="stat"><small>Liquidité</small><b>${fmt$(p.liquidity?.usd)}</b></div>
+     <div class="stat"><small>5 min</small><b class="${(p.priceChange?.m5||0)>=0?'green':'red'}">${pct(p.priceChange?.m5)}</b></div>
+     <div class="stat"><small>1 h</small><b class="${(p.priceChange?.h1||0)>=0?'green':'red'}">${pct(p.priceChange?.h1)}</b></div>
+     <div class="stat"><small>Buys/Sells 5m</small><b>${p.txns?.m5?.buys||0} / ${p.txns?.m5?.sells||0}</b></div>
+   </div>
+   <div class="chips">${chipsHtml(checks)}</div>`;
+}
+
+/* ---------- Jupiter swap ---------- */
+function jupBase(){ return $('jupKey').value.trim()? 'https://api.jup.ag/swap/v1' : 'https://lite-api.jup.ag/swap/v1'; }
+function jupHeaders(){ const h={'Content-Type':'application/json'}; const k=$('jupKey').value.trim(); if(k) h['x-api-key']=k; return h; }
+async function swap(inputMint, outputMint, amountRaw){
+  if(!wallet) throw new Error('Connecte Solflare d’abord');
+  const bps=Math.round((num('slip')||15)*100);
+  const q=await fetch(`${jupBase()}/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amountRaw}&slippageBps=${bps}`,{headers:jupHeaders()}).then(r=>r.json());
+  if(q.error||!q.outAmount) throw new Error('Quote: '+(q.error||'pas de route'));
+  const body={quoteResponse:q,userPublicKey:wallet.toBase58(),wrapAndUnwrapSol:true,dynamicComputeUnitLimit:true,
+    prioritizationFeeLamports:{priorityLevelWithMaxLamports:{maxLamports:Math.round((num('prio')||0.002)*LAMPORTS),priorityLevel:'veryHigh'}}};
+  const s=await fetch(`${jupBase()}/swap`,{method:'POST',headers:jupHeaders(),body:JSON.stringify(body)}).then(r=>r.json());
+  if(!s.swapTransaction) throw new Error('Swap: '+(s.error||'erreur'));
+  const tx=W.VersionedTransaction.deserialize(Uint8Array.from(atob(s.swapTransaction),c=>c.charCodeAt(0)));
+  const res=await window.solflare.signAndSendTransaction(tx);
+  const sig=res.signature||res;
+  log('Tx envoyée '+sig);
+  await confirmSig(sig);
+  return {sig,q};
+}
+async function confirmSig(sig){
+  for(let i=0;i<40;i++){
+    const st=(await rpc().getSignatureStatuses([sig])).value[0];
+    if(st?.err) throw new Error('Tx échouée');
+    if(st && (st.confirmationStatus==='confirmed'||st.confirmationStatus==='finalized')){ log('Confirmée ✓ '+short(sig),'green'); return; }
+    await new Promise(r=>setTimeout(r,1500));
+  }
+  log('Pas encore confirmée, vérifie sur Solscan','red');
+}
+
+/* ---------- buy / sell ---------- */
+async function buy(mint=cur?.mint, sol=num('buyAmt'), pair=cur?.pair){
+  try{
+    if(!mint) throw new Error('Charge un token');
+    log(`Achat ${sol} SOL de ${pair?.baseToken?.symbol||short(mint)}…`);
+    const {sig,q}=await swap(SOL_MINT, mint, Math.round(sol*LAMPORTS));
+    let price=+pair?.priceUsd||null;
+    try{ const p=(await pairsForMints([mint]))[mint]; if(p) price=+p.priceUsd; }catch{}
+    addTrade({type:'buy',mint,sym:pair?.baseToken?.symbol||short(mint),sol,tokens:q.outAmount,price,sig,ts:Date.now(),open:true});
+    refreshBal(); refreshHold();
+    return true;
+  }catch(e){ log('Achat: '+e.message,'red'); return false; }
+}
+async function tokenBalance(mint){
+  const r=await rpc().getParsedTokenAccountsByOwner(wallet,{mint:new W.PublicKey(mint)});
+  return r.value.reduce((s,a)=>s+BigInt(a.account.data.parsed.info.tokenAmount.amount),0n);
+}
+async function refreshHold(){
+  if(!wallet||!cur) return;
+  try{ const b=await tokenBalance(cur.mint); const d=cur.decimals??6; $('holdLbl').textContent=(Number(b)/10**d).toLocaleString(undefined,{maximumFractionDigits:2}); }catch{}
+}
+async function sell(pctSell, mint=cur?.mint, sym=cur?.pair?.baseToken?.symbol){
+  try{
+    if(!mint) throw new Error('Charge un token'); if(!wallet) throw new Error('Connecte Solflare');
+    const bal=await tokenBalance(mint); if(bal===0n) throw new Error('Solde token = 0');
+    const amt= pctSell>=100? bal : bal*BigInt(pctSell)/100n;
+    log(`Vente ${pctSell}% de ${sym||short(mint)}…`);
+    const {sig,q}=await swap(mint, SOL_MINT, amt.toString());
+    addTrade({type:'sell',mint,sym:sym||short(mint),sol:+q.outAmount/LAMPORTS,pct:pctSell,sig,ts:Date.now()});
+    if(pctSell>=100) closePositions(mint);
+    refreshBal(); refreshHold(); return true;
+  }catch(e){ log('Vente: '+e.message,'red'); return false; }
+}
+
+/* ---------- trades & TP/SL ---------- */
+let trades=load('ms_trades',[]);
+function addTrade(t){ trades.unshift(t); save('ms_trades',trades); renderTrades(); }
+function closePositions(m){ trades.forEach(t=>{ if(t.mint===m&&t.type==='buy') t.open=false; }); save('ms_trades',trades); renderTrades(); }
+function clearTrades(){ if(confirm('Effacer l’historique ?')){ trades=[]; save('ms_trades',trades); renderTrades(); } }
+const livePrice={};
+function renderTrades(){
+  if(!trades.length){ $('trades').innerHTML='Aucun trade pour l\'instant.'; return; }
+  $('trades').innerHTML='<table><thead><tr><th></th><th>Token</th><th>SOL</th><th>PnL</th><th></th></tr></thead><tbody>'+
+   trades.slice(0,40).map(t=>{
+     const lp=livePrice[t.mint]; const pnl= t.type==='buy'&&t.open&&t.price&&lp? (lp/t.price-1)*100 : null;
+     return `<tr><td class="${t.type==='buy'?'green':'red'}">${t.type==='buy'?'Achat':'Vente'}</td>
+      <td><a href="#" onclick="loadToken('${t.mint}');return false">${t.sym}</a><div class="mut">${new Date(t.ts).toLocaleTimeString()}</div></td>
+      <td>${(+t.sol).toFixed(3)}</td>
+      <td class="${pnl==null?'mut':pnl>=0?'green':'red'}">${pnl==null?(t.type==='buy'&&!t.open?'fermé':'—'):pct(pnl)}</td>
+      <td><a href="https://solscan.io/tx/${t.sig}" target="_blank" rel="noopener">tx</a></td></tr>`;
+   }).join('')+'</tbody></table>';
+}
+const tpslBusy=new Set();
+async function watchPositions(){
+  const open=[...new Set(trades.filter(t=>t.type==='buy'&&t.open&&t.price).map(t=>t.mint))];
+  if(open.length){
+    try{
+      const pairs=await pairsForMints(open.slice(0,30));
+      for(const m of open){
+        const p=pairs[m]; if(!p) continue; livePrice[m]=+p.priceUsd;
+        const entry=trades.find(t=>t.mint===m&&t.type==='buy'&&t.open).price;
+        const ch=(livePrice[m]/entry-1)*100;
+        const hit= ch>=num('tp')? 'TP' : ch<=-num('sl')? 'SL' : null;
+        if(hit && !tpslBusy.has(m)){
+          tpslBusy.add(m);
+          log(`${hit} touché sur ${p.baseToken.symbol} (${pct(ch)})`, hit==='TP'?'green':'red');
+          notify(`${hit} ${p.baseToken.symbol} ${pct(ch)}`);
+          if($('autoSell').checked && wallet){ await sell(100,m,p.baseToken.symbol); }
+          setTimeout(()=>tpslBusy.delete(m),60000);
+        }
+      }
+    }catch(e){}
+    renderTrades();
+  }
+  setTimeout(watchPositions,15000);
+}
+
+/* ---------- sniper ---------- */
+let snOn=false, snTimer=null, snBuys=0;
+const seen=new Map(); // mint -> {pair, checks, status}
+function toggleSniper(){
+  snOn=!snOn; $('snDot').classList.toggle('on',snOn);
+  $('snBtn').textContent=snOn?'Arrêter':'Démarrer'; $('snBtn').className=snOn?'bad':'ok';
+  if(snOn){ snBuys=0; if(!wallet&&$('snAuto').checked) log('Attention: wallet pas connecté, achat auto impossible','red'); log('Sniper démarré'); if('Notification' in window && Notification.permission==='default') Notification.requestPermission(); scan(); }
+  else { clearTimeout(snTimer); log('Sniper arrêté'); }
+}
+async function scan(){
+  if(!snOn) return;
+  try{
+    const [profiles,boosts]=await Promise.all([ds('/token-profiles/latest/v1').catch(()=>[]), ds('/token-boosts/latest/v1').catch(()=>[])]);
+    const mints=[...new Set([...(profiles||[]),...(boosts||[])].filter(x=>x.chainId==='solana').map(x=>x.tokenAddress))];
+    // ajoute aussi ceux déjà vus et encore "en attente" pour les re-tester
+    const retry=[...seen.entries()].filter(([m,v])=>v.status==='watch').map(([m])=>m);
+    const all=[...new Set([...mints,...retry])].slice(0,90);
+    const pairMap={};
+    for(let i=0;i<all.length;i+=30) Object.assign(pairMap, await pairsForMints(all.slice(i,i+30)));
+    for(const m of all){
+      const p=pairMap[m]; if(!p) continue;
+      const prev=seen.get(m); if(prev && ['bought','fail','alert'].includes(prev.status)) { prev.pair=p; continue; }
+      const mc=p.marketCap||p.fdv||0;
+      const dc=dexChecks(p);
+      const mcOk=mc>=num('fMcMin')&&mc<=num('fMcMax');
+      const entry={pair:p, checks:dc, status:'watch'};
+      seen.set(m,entry);
+      if(!mcOk || !dc.every(c=>c.ok)) continue;      // pas encore bon → on re-testera
+      entry.status='checking'; renderSn();
+      try{
+        const cc=await chainChecks(m); entry.checks=[...dc,...cc.checks];
+        const hard=cc.checks.filter(c=>c.k==='mint'||c.k==='freeze');
+        if(hard.some(c=>c.ok===false)){ entry.status='fail'; continue; }   // mint/freeze actifs = poubelle définitive
+        if(!entry.checks.every(c=>c.ok===true)){ entry.status='watch'; continue; }
+        entry.status='alert';
+        log(`🎯 ${p.baseToken.symbol} passe tous les checks (MC ${fmt$(mc)})`,'green');
+        notify(`🎯 ${p.baseToken.symbol} passe tous les checks`);
+        if($('snAuto').checked && wallet && snBuys<num('snMax')){
+          snBuys++; entry.status='buying'; renderSn();
+          const ok=await buy(m, num('snAmt'), p);
+          entry.status= ok?'bought':'alert';
+          if(!ok) snBuys--;
+        }
+      }catch(e){ entry.status='watch'; log('Checks '+p.baseToken.symbol+': '+e.message,'red'); }
+    }
+    // nettoyage: garde 150 max
+    if(seen.size>150){ [...seen.keys()].slice(0,seen.size-150).forEach(k=>seen.delete(k)); }
+  }catch(e){ log('Scan: '+e.message,'red'); }
+  renderSn();
+  snTimer=setTimeout(scan, Math.max(10,num('snInt')||20)*1000);
+}
+const ST={watch:['wait','surveillé'],checking:['wait','checks…'],fail:['bad','rejeté'],alert:['ok','🎯 prêt'],buying:['wait','achat…'],bought:['ok','acheté']};
+function renderSn(){
+  const rows=[...seen.entries()].map(([m,v])=>({m,...v}))
+    .sort((a,b)=>({alert:0,buying:0,bought:1,checking:2,watch:3,fail:4}[a.status]-({alert:0,buying:0,bought:1,checking:2,watch:3,fail:4}[b.status])) || (b.checks.filter(c=>c.ok).length-a.checks.filter(c=>c.ok).length))
+    .slice(0,25);
+  if(!rows.length){ $('snTable').innerHTML='<tr><td colspan="6" class="mut">Scan en cours…</td></tr>'; return; }
+  $('snTable').innerHTML=rows.map(r=>{ const p=r.pair; const s=ST[r.status];
+    return `<tr><td><b>$${p.baseToken.symbol}</b><div class="mut">${short(r.m)}</div><span class="chip ${s[0]}">${s[1]}</span></td>
+     <td>${fmt$(p.liquidity?.usd)}<div class="mut">${fmt$(p.marketCap||p.fdv)}</div></td>
+     <td class="${(p.priceChange?.m5||0)>=0?'green':'red'}">${pct(p.priceChange?.m5)}<div class="mut">${p.txns?.m5?.buys||0}/${p.txns?.m5?.sells||0}</div></td>
+     <td>${p.pairCreatedAt?ageStr(Date.now()-p.pairCreatedAt):'?'}</td>
+     <td><div class="chips" style="margin:0">${r.checks.map(c=>`<span class="chip ${c.ok===true?'ok':c.ok===false?'bad':'wait'}" title="${c.d||''}">${c.ok===true?'✓':c.ok===false?'✗':'?'} ${c.label.replace(/ ≥.*/,'')}</span>`).join('')}</div></td>
+     <td><button onclick="loadToken('${r.m}')">Voir</button>${r.status==='alert'?` <button class="ok" onclick="buy('${r.m}',num('snAmt'),seen.get('${r.m}').pair)">Acheter</button>`:''}</td></tr>`;
+  }).join('');
+}
+function notify(t){ try{ if('Notification' in window && Notification.permission==='granted') new Notification('Meme Sniper',{body:t}); }catch{} try{ const a=new AudioContext(),o=a.createOscillator(); o.frequency.value=880; o.connect(a.destination); o.start(); o.stop(a.currentTime+.15);}catch{} }
+
+/* ---------- init ---------- */
+[0.05,0.1,0.25,0.5,1].forEach(v=>{ const b=document.createElement('button'); b.textContent=v+' SOL'; b.onclick=()=>{ $('buyAmt').value=v; persist(); document.querySelectorAll('#amts button').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); }; $('amts').appendChild(b); });
+$('tokInput').addEventListener('keydown',e=>{ if(e.key==='Enter') loadToken(); });
+renderTrades(); watchPositions();
+window.addEventListener('load',()=>{ if(window.solflare?.isConnected){ wallet=window.solflare.publicKey; connect(); } });
+</script>
+</body>
+</html>
