@@ -123,7 +123,7 @@ footer{max-width:1100px;margin:0 auto;padding:0 16px 30px;color:var(--mut);font-
       <div><label>Priority fee max (SOL)</label><input id="prio" type="number" step="0.0005" value="0.002"></div>
     </div>
     <label>RPC (Helius / QuickNode conseillé, le public limite vite)</label>
-    <input id="rpc" placeholder="https://api.mainnet-beta.solana.com">
+    <input id="rpc" placeholder="vide = RPC publics (publicnode, drpc…)">
     <label>Clé API Jupiter (optionnel, gratuite sur developers.jup.ag/portal)</label>
     <input id="jupKey" placeholder="vide = lite-api gratuit">
     <label>Log</label>
@@ -150,15 +150,28 @@ function save(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch{} }
 const saved = load('ms_settings',{});
 SETTINGS.forEach(id=>{ if(saved[id]!=null) $(id).value=saved[id]; $(id).addEventListener('change',persist); });
 CHECKS.forEach(id=>{ if(saved[id]!=null) $(id).checked=saved[id]; $(id).addEventListener('change',persist); });
-function persist(){ const o={}; SETTINGS.forEach(id=>o[id]=$(id).value); CHECKS.forEach(id=>o[id]=$(id).checked); save('ms_settings',o); conn=null; }
+function persist(){ const o={}; SETTINGS.forEach(id=>o[id]=$(id).value); CHECKS.forEach(id=>o[id]=$(id).checked); save('ms_settings',o); conn=null; rpcIdx=0; }
 const num = id => parseFloat($(id).value);
 
 /* ---------- log ---------- */
 function log(msg, cls=''){ const t=new Date().toLocaleTimeString(); const d=document.createElement('div'); if(cls) d.className=cls; d.textContent=`[${t}] ${msg}`; $('log').prepend(d); }
 
 /* ---------- connection ---------- */
-let conn=null;
-function rpc(){ if(!conn) conn=new W.Connection($('rpc').value.trim()||'https://api.mainnet-beta.solana.com','confirmed'); return conn; }
+// RPC: le tien d'abord, puis des RPC publics qui acceptent le navigateur. Bascule auto si 403/429.
+const PUBLIC_RPCS=['https://solana-rpc.publicnode.com','https://solana.drpc.org','https://api.mainnet-beta.solana.com'];
+let conn=null, rpcIdx=0;
+function rpcList(){ const u=$('rpc').value.trim(); return u? [u,...PUBLIC_RPCS] : PUBLIC_RPCS; }
+function rpc(){ if(!conn){ const l=rpcList(); conn=new W.Connection(l[rpcIdx%l.length],'confirmed'); } return conn; }
+async function onRpc(fn){
+  const n=rpcList().length; let last;
+  for(let i=0;i<n;i++){
+    try{ return await fn(rpc()); }
+    catch(e){ last=e; const m=String(e.message||e);
+      if(/403|429|forbidden|Too many|fetch|CORS|NetworkError/i.test(m)){ rpcIdx++; conn=null; log('RPC bloqué, bascule → '+rpcList()[rpcIdx%n]); continue; }
+      throw e; }
+  }
+  throw new Error('Tous les RPC ont refusé — mets un RPC Helius dans Réglages ('+(last?.message||'')+')');
+}
 
 /* ---------- wallet ---------- */
 let wallet=null;
@@ -168,7 +181,7 @@ async function connect(){
   try{ await p.connect(); wallet=p.publicKey; $('walletLbl').textContent=short(wallet.toBase58()); $('connectBtn').textContent='Connecté'; log('Wallet connecté '+wallet.toBase58()); refreshBal(); refreshHold(); }
   catch(e){ log('Connexion refusée: '+e.message,'red'); }
 }
-async function refreshBal(){ if(!wallet) return; try{ const b=await rpc().getBalance(wallet); $('solBal').textContent=(b/LAMPORTS).toFixed(4)+' SOL'; }catch(e){ log('Solde: '+e.message,'red'); } }
+async function refreshBal(){ if(!wallet) return; try{ const b=await onRpc(c=>c.getBalance(wallet)); $('solBal').textContent=(b/LAMPORTS).toFixed(4)+' SOL'; }catch(e){ log('Solde: '+e.message,'red'); } }
 
 /* ---------- DexScreener ---------- */
 async function ds(path){ const r=await fetch('https://api.dexscreener.com'+path); if(!r.ok) throw new Error('DexScreener '+r.status); return r.json(); }
@@ -193,14 +206,14 @@ async function resolveInput(s){
 
 /* ---------- on-chain checks ---------- */
 async function mintInfo(mint){
-  const r=await rpc().getParsedAccountInfo(new W.PublicKey(mint));
+  const r=await onRpc(c=>c.getParsedAccountInfo(new W.PublicKey(mint)));
   const info=r.value?.data?.parsed?.info; if(!info) throw new Error('Mint introuvable');
   return {mintAuth:info.mintAuthority, freezeAuth:info.freezeAuthority, supply:+info.supply, decimals:info.decimals, program:r.value.owner.toBase58()};
 }
 async function holders(mint, supply){
-  const r=await rpc().getTokenLargestAccounts(new W.PublicKey(mint));
+  const r=await onRpc(c=>c.getTokenLargestAccounts(new W.PublicKey(mint)));
   const accs=r.value.slice(0,20);
-  const infos=await rpc().getMultipleParsedAccounts(accs.map(a=>a.address));
+  const infos=await onRpc(c=>c.getMultipleParsedAccounts(accs.map(a=>a.address)));
   const list=[];
   accs.forEach((a,i)=>{
     const owner=infos.value[i]?.data?.parsed?.info?.owner; if(!owner) return;
@@ -220,7 +233,7 @@ async function devPct(mint, supply){
   }
   if(!creator) return {pct:null, creator:null};
   try{
-    const r=await rpc().getParsedTokenAccountsByOwner(new W.PublicKey(creator),{mint:new W.PublicKey(mint)});
+    const r=await onRpc(c=>c.getParsedTokenAccountsByOwner(new W.PublicKey(creator),{mint:new W.PublicKey(mint)}));
     const amt=r.value.reduce((s,a)=>s+ +a.account.data.parsed.info.tokenAmount.amount,0);
     return {pct:amt/supply*100, creator};
   }catch{ return {pct:null, creator}; }
@@ -262,8 +275,13 @@ async function loadToken(input){
     if(!p) throw new Error('Pas de pair trouvée sur DexScreener (trop récent ?)');
     cur={mint,pair:p};
     renderToken([...dexChecks(p), {label:'Checks on-chain…',ok:null}]);
-    const cc=await chainChecks(mint); cur.decimals=cc.mi.decimals; cur.program=cc.mi.program;
-    renderToken([...dexChecks(p), ...cc.checks]);
+    try{
+      const cc=await chainChecks(mint); cur.decimals=cc.mi.decimals; cur.program=cc.mi.program;
+      renderToken([...dexChecks(p), ...cc.checks]);
+    }catch(e){
+      renderToken([...dexChecks(p), {label:'Checks on-chain indispo', ok:null, d:e.message}]);
+      log('Checks on-chain: '+e.message,'red');
+    }
     refreshHold();
   }catch(e){ $('tokBox').innerHTML=`<span class="red">${e.message}</span>`; }
 }
@@ -304,7 +322,7 @@ async function swap(inputMint, outputMint, amountRaw){
 }
 async function confirmSig(sig){
   for(let i=0;i<40;i++){
-    const st=(await rpc().getSignatureStatuses([sig])).value[0];
+    const st=(await onRpc(c=>c.getSignatureStatuses([sig]))).value[0];
     if(st?.err) throw new Error('Tx échouée');
     if(st && (st.confirmationStatus==='confirmed'||st.confirmationStatus==='finalized')){ log('Confirmée ✓ '+short(sig),'green'); return; }
     await new Promise(r=>setTimeout(r,1500));
@@ -326,7 +344,7 @@ async function buy(mint=cur?.mint, sol=num('buyAmt'), pair=cur?.pair){
   }catch(e){ log('Achat: '+e.message,'red'); return false; }
 }
 async function tokenBalance(mint){
-  const r=await rpc().getParsedTokenAccountsByOwner(wallet,{mint:new W.PublicKey(mint)});
+  const r=await onRpc(c=>c.getParsedTokenAccountsByOwner(wallet,{mint:new W.PublicKey(mint)}));
   return r.value.reduce((s,a)=>s+BigInt(a.account.data.parsed.info.tokenAmount.amount),0n);
 }
 async function refreshHold(){
