@@ -2,309 +2,382 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0b10">
 <title>Meme Sniper</title>
 <script src="https://unpkg.com/@solana/web3.js@1.98.0/lib/index.iife.min.js"></script>
 <style>
-:root{--bg:#0b0d12;--card:#141821;--line:#232a36;--txt:#e7ebf2;--mut:#8a93a5;--acc:#9b7bff;--ok:#2ecc8f;--bad:#ff5c6c;--warn:#f5b84a}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-h1{font-size:18px;margin:0}h1 span{color:var(--acc)}
-main{max-width:1100px;margin:0 auto;padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media(max-width:860px){main{grid-template-columns:1fr}}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
-.card h2{font-size:15px;margin:0 0 10px;display:flex;justify-content:space-between;align-items:center}
-.full{grid-column:1/-1}
-button{background:#232a36;color:var(--txt);border:1px solid #2f3746;border-radius:8px;padding:8px 12px;cursor:pointer;font:inherit}
-button:hover{border-color:var(--acc)}button.pri{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
-button.ok{background:var(--ok);border-color:var(--ok);color:#06140e;font-weight:600}
-button.bad{background:var(--bad);border-color:var(--bad);color:#fff;font-weight:600}
-button:disabled{opacity:.5;cursor:not-allowed}
-input,select{background:#0e1118;color:var(--txt);border:1px solid #2f3746;border-radius:8px;padding:8px 10px;font:inherit;width:100%}
-label{font-size:12px;color:var(--mut);display:block;margin:8px 0 4px}
-.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>input{flex:1;min-width:160px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.stat{background:#0e1118;border:1px solid var(--line);border-radius:8px;padding:8px}.stat b{display:block;font-size:15px}.stat small{color:var(--mut)}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
-.chip{padding:4px 9px;border-radius:999px;font-size:12px;border:1px solid var(--line);background:#0e1118}
-.chip.ok{color:var(--ok);border-color:#1f5a43}.chip.bad{color:var(--bad);border-color:#6a2a33}.chip.wait{color:var(--warn);border-color:#5e4a20}
-.mut{color:var(--mut)}.small{font-size:12px}.green{color:var(--ok)}.red{color:var(--bad)}
-.amts button{padding:6px 10px}.amts button.sel{border-color:var(--acc);color:var(--acc)}
-table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{text-align:left;padding:6px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mut);font-weight:500}
-#log{max-height:220px;overflow:auto;font:12px ui-monospace,Menlo,monospace;background:#0e1118;border-radius:8px;padding:8px;white-space:pre-wrap}
-.switch{display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--txt);font-size:13px;margin:6px 0}.switch input{width:auto}
-.dot{width:9px;height:9px;border-radius:50%;background:var(--mut);display:inline-block}.dot.on{background:var(--ok);box-shadow:0 0 8px var(--ok)}
-a{color:var(--acc)}
-footer{max-width:1100px;margin:0 auto;padding:0 16px 30px;color:var(--mut);font-size:12px}
+:root{--bg:#0a0b10;--card:#14161f;--card2:#1b1e2a;--line:#262a38;--txt:#eef0f6;--mut:#8b91a3;--acc:#9b7bff;--ok:#22d39a;--bad:#ff5468;--warn:#ffb84d;
+  --st:env(safe-area-inset-top);--sb:env(safe-area-inset-bottom)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{padding-bottom:calc(76px + var(--sb))}
+/* header */
+.top{position:sticky;top:0;z-index:20;background:rgba(10,11,16,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  padding:calc(10px + var(--st)) 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.brand{font-weight:700;font-size:17px}.brand span{color:var(--acc)}
+.wal{display:flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:6px 6px 6px 12px;font-size:13px}
+.wal b{font-weight:600}.wal button{padding:6px 12px;font-size:13px;border-radius:999px}
+/* pages */
+.page{display:none;padding:14px 14px 0;max-width:560px;margin:0 auto}.page.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px}
+.ttl{font-size:13px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin:0 0 10px}
+/* inputs */
+input{width:100%;background:#0d0f16;color:var(--txt);border:1px solid var(--line);border-radius:12px;padding:12px;font:16px -apple-system,system-ui,sans-serif;outline:none}
+input:focus{border-color:var(--acc)}
+label{display:block;font-size:12px;color:var(--mut);margin:10px 0 5px}
+button{font:inherit;color:var(--txt);background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;font-weight:600}
+button:active{transform:scale(.97)}
+button.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+button.ok{background:var(--ok);border-color:var(--ok);color:#04130d}
+button.bad{background:var(--bad);border-color:var(--bad);color:#fff}
+button.ghost{background:transparent}
+button:disabled{opacity:.45}
+.big{width:100%;padding:16px;font-size:17px;border-radius:14px}
+.r{display:flex;gap:8px;align-items:center}.r>*{min-width:0}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.g5 button{padding:10px 0;font-size:13px}.g5 button.sel{border-color:var(--acc);color:var(--acc);background:rgba(155,123,255,.1)}
+/* token */
+.tok-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.sym{font-size:22px;font-weight:700}.sub{color:var(--mut);font-size:13px}
+.stat{background:#0d0f16;border-radius:12px;padding:9px 10px}.stat small{display:block;color:var(--mut);font-size:11px}.stat b{font-size:15px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chip{font-size:12px;padding:5px 9px;border-radius:999px;background:#0d0f16;border:1px solid var(--line);white-space:nowrap}
+.chip.ok{color:var(--ok);border-color:rgba(34,211,154,.35)}.chip.bad{color:var(--bad);border-color:rgba(255,84,104,.35)}.chip.wait{color:var(--warn);border-color:rgba(255,184,77,.35)}
+.score{font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px}
+.green{color:var(--ok)}.red{color:var(--bad)}.mut{color:var(--mut)}.small{font-size:12px}
+a{color:var(--acc);text-decoration:none}
+/* switch */
+.sw{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:14px}.sw:first-of-type{border-top:0}
+.tg{position:relative;width:50px;height:30px;flex:none}.tg input{opacity:0;width:0;height:0}
+.tg span{position:absolute;inset:0;background:#2a2f40;border-radius:30px;transition:.2s}
+.tg span:before{content:"";position:absolute;width:26px;height:26px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.2s}
+.tg input:checked+span{background:var(--ok)}.tg input:checked+span:before{transform:translateX(20px)}
+/* lists */
+.item{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px}
+.item .h{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.item .meta{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-top:6px}.item .meta b{color:var(--txt);font-weight:600}
+.empty{text-align:center;color:var(--mut);padding:30px 10px;font-size:14px}
+details{margin-top:4px}summary{cursor:pointer;color:var(--acc);font-weight:600;padding:6px 0;list-style:none}summary::-webkit-details-marker{display:none}
+/* sniper hero */
+.hero{text-align:center;padding:20px 14px}
+.pulse{width:14px;height:14px;border-radius:50%;background:var(--mut);display:inline-block;vertical-align:middle;margin-right:6px}
+.pulse.on{background:var(--ok);animation:p 1.4s infinite}@keyframes p{0%{box-shadow:0 0 0 0 rgba(34,211,154,.6)}100%{box-shadow:0 0 0 12px rgba(34,211,154,0)}}
+.kpis{display:flex;justify-content:center;gap:18px;margin:12px 0 16px;font-size:12px;color:var(--mut)}.kpis b{display:block;font-size:18px;color:var(--txt)}
+/* log */
+#log{max-height:260px;overflow:auto;font:11.5px ui-monospace,Menlo,monospace;background:#0d0f16;border-radius:12px;padding:10px;white-space:pre-wrap;word-break:break-all}
+/* tab bar */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;grid-template-columns:repeat(4,1fr);background:rgba(16,18,26,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-top:1px solid var(--line);padding:6px 6px calc(6px + var(--sb))}
+.tabs button{background:none;border:0;color:var(--mut);font-size:11px;font-weight:600;padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
+.tabs button svg{width:24px;height:24px}.tabs button.on{color:var(--acc)}
+.badge{position:absolute;top:2px;right:calc(50% - 20px);background:var(--bad);color:#fff;font-size:10px;border-radius:999px;padding:1px 5px;display:none}
+/* toast */
+#toast{position:fixed;left:12px;right:12px;top:calc(64px + var(--st));z-index:40;max-width:540px;margin:0 auto;background:var(--card2);border:1px solid var(--acc);border-radius:16px;padding:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,.5);display:none}
+#toast.on{display:block;animation:in .25s}@keyframes in{from{transform:translateY(-12px);opacity:0}}
+.foot{color:var(--mut);font-size:11.5px;text-align:center;padding:4px 10px 14px}
 </style>
 </head>
 <body>
-<header>
-  <h1>Meme <span>Sniper</span> · Solana</h1>
-  <div class="row">
-    <span id="walletLbl" class="mut small">Pas connecté</span>
-    <span class="mut small">Solde: <b id="solBal">—</b></span>
-    <button onclick="refreshBal()">↻</button>
-    <button class="pri" id="connectBtn" onclick="connect()">Connecter Solflare</button>
+
+<div class="top">
+  <div class="brand">Meme <span>Sniper</span></div>
+  <div class="wal"><b id="solBal">—</b><button class="pri" id="connectBtn" onclick="connect()">Connecter</button></div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ===== TRADE ===== -->
+<section class="page on" id="p-trade">
+  <div class="card">
+    <div class="r">
+      <input id="tokInput" placeholder="Mint, lien pump.fun ou DexScreener" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button class="ghost" onclick="pasteTok()" style="flex:none">Coller</button>
+    </div>
+    <button class="pri big" style="margin-top:8px" onclick="loadToken()">Charger</button>
   </div>
-</header>
 
-<main>
-  <!-- TOKEN -->
-  <section class="card">
-    <h2>Token</h2>
-    <div class="row">
-      <input id="tokInput" placeholder="Adresse mint, lien pump.fun ou DexScreener">
-      <button class="pri" onclick="loadToken()">Charger</button>
-    </div>
-    <div id="tokBox" class="mut small" style="margin-top:10px">Aucun token chargé.</div>
-  </section>
+  <div class="card" id="tokBox"><div class="empty">Colle une adresse pour voir le token et les checks.</div></div>
 
-  <!-- TRADE -->
-  <section class="card">
-    <h2>Trade</h2>
-    <label>Acheter (SOL)</label>
-    <div class="row amts" id="amts"></div>
-    <div class="row" style="margin-top:8px">
-      <input id="buyAmt" type="number" step="0.01" value="0.1">
-      <button class="ok" onclick="buy()">Acheter</button>
+  <div class="card">
+    <div class="ttl">Acheter</div>
+    <div class="g5" id="amts"></div>
+    <div class="r" style="margin-top:8px">
+      <input id="buyAmt" type="number" inputmode="decimal" step="0.01" value="0.1">
+      <span class="mut" style="flex:none">SOL</span>
     </div>
-    <label>Vendre</label>
-    <div class="row">
+    <button class="ok big" style="margin-top:10px" onclick="buy()">Acheter</button>
+  </div>
+
+  <div class="card">
+    <div class="ttl" style="display:flex;justify-content:space-between">Vendre <span class="mut" style="text-transform:none;font-weight:500">Tu détiens <b id="holdLbl" style="color:var(--txt)">—</b></span></div>
+    <div class="g3">
       <button onclick="sell(25)">25%</button><button onclick="sell(50)">50%</button><button class="bad" onclick="sell(100)">100%</button>
-      <span class="mut small">Tu détiens: <b id="holdLbl">—</b></span>
     </div>
-    <div class="grid2" style="margin-top:6px">
-      <div><label>Take profit (%)</label><input id="tp" type="number" value="100"></div>
-      <div><label>Stop loss (%)</label><input id="sl" type="number" value="35"></div>
-    </div>
-    <label class="switch"><input type="checkbox" id="autoSell" checked> Vente auto quand TP/SL touché (Solflare demande confirmation)</label>
-  </section>
+  </div>
+</section>
 
-  <!-- SNIPER -->
-  <section class="card full">
-    <h2><span><span class="dot" id="snDot"></span> Sniper</span>
-      <span class="row"><button class="ok" id="snBtn" onclick="toggleSniper()">Démarrer</button></span></h2>
-    <p class="mut small" style="margin-top:0">Scanne les tokens Solana récents (DexScreener), applique tous les filtres, et achète (ou alerte) dès qu'un token passe tout. Chaque achat s'ouvre dans Solflare pour signature.</p>
-    <div class="grid3">
-      <div><label>Liquidité min ($)</label><input id="fLiq" type="number" value="40000"></div>
-      <div><label>Market cap min ($)</label><input id="fMcMin" type="number" value="50000"></div>
-      <div><label>Market cap max ($)</label><input id="fMcMax" type="number" value="5000000"></div>
-      <div><label>Ratio buys/sells 5m min</label><input id="fRatio" type="number" step="0.1" value="1.3"></div>
-      <div><label>Buys 5m min</label><input id="fBuys" type="number" value="40"></div>
-      <div><label>Pump vertical: 5m max (%)</label><input id="fV5" type="number" value="30"></div>
-      <div><label>Pump vertical: 1h max (%)</label><input id="fV1h" type="number" value="200"></div>
-      <div><label>Top holder max (%)</label><input id="fTop1" type="number" step="0.5" value="5"></div>
-      <div><label>Top 10 holders max (%)</label><input id="fTop10" type="number" value="30"></div>
-      <div><label>Dev max (%)</label><input id="fDev" type="number" step="0.5" value="5"></div>
-      <div><label>Âge min (minutes)</label><input id="fAgeMin" type="number" value="10"></div>
-      <div><label>Âge max (heures)</label><input id="fAgeMax" type="number" value="24"></div>
-    </div>
-    <div class="grid3">
-      <div><label>Montant par snipe (SOL)</label><input id="snAmt" type="number" step="0.01" value="0.05"></div>
-      <div><label>Max achats / session</label><input id="snMax" type="number" value="3"></div>
-      <div><label>Intervalle scan (s)</label><input id="snInt" type="number" value="20"></div>
-    </div>
-    <label class="switch"><input type="checkbox" id="snAuto"> Achat auto (sinon: alerte + bouton)</label>
-    <label class="switch"><input type="checkbox" id="snDevUnknown"> Accepter si Dev % inconnu</label>
-    <table style="margin-top:10px"><thead><tr><th>Token</th><th>Liq / MC</th><th>5m</th><th>Âge</th><th>Checks</th><th></th></tr></thead><tbody id="snTable"><tr><td colspan="6" class="mut">Sniper arrêté.</td></tr></tbody></table>
-  </section>
+<!-- ===== SNIPER ===== -->
+<section class="page" id="p-sniper">
+  <div class="card hero">
+    <div style="font-size:15px;font-weight:600"><span class="pulse" id="snDot"></span><span id="snState">Sniper arrêté</span></div>
+    <div class="kpis"><div><b id="kScan">0</b>scannés</div><div><b id="kReady">0</b>prêts</div><div><b id="kBought">0</b>achetés</div></div>
+    <button class="ok big" id="snBtn" onclick="toggleSniper()">Démarrer le sniper</button>
+  </div>
 
-  <!-- POSITIONS + LOG -->
-  <section class="card">
-    <h2>Mes trades <button class="small" onclick="clearTrades()">Effacer</button></h2>
-    <div id="trades" class="small mut">Aucun trade pour l'instant.</div>
-  </section>
-  <section class="card">
-    <h2>Réglages & log</h2>
-    <div class="grid2">
-      <div><label>Slippage max (%)</label><input id="slip" type="number" value="15"></div>
-      <div><label>Priority fee max (SOL)</label><input id="prio" type="number" step="0.0005" value="0.002"></div>
+  <div class="card">
+    <div class="sw"><span>Achat auto<div class="small mut">Sinon: alerte + bouton Acheter</div></span><label class="tg"><input type="checkbox" id="snAuto"><span></span></label></div>
+    <div class="sw"><span>Accepter si Dev % inconnu</span><label class="tg"><input type="checkbox" id="snDevUnknown"><span></span></label></div>
+    <div class="g3" style="margin-top:4px">
+      <div><label>SOL / snipe</label><input id="snAmt" type="number" inputmode="decimal" step="0.01" value="0.05"></div>
+      <div><label>Max achats</label><input id="snMax" type="number" inputmode="numeric" value="3"></div>
+      <div><label>Scan (s)</label><input id="snInt" type="number" inputmode="numeric" value="20"></div>
     </div>
-    <label>RPC (Helius / QuickNode conseillé, le public limite vite)</label>
-    <input id="rpc" placeholder="vide = RPC publics (publicnode, drpc…)">
-    <label>Clé API Jupiter (optionnel, gratuite sur developers.jup.ag/portal)</label>
-    <input id="jupKey" placeholder="vide = lite-api gratuit">
-    <label>Log</label>
-    <div id="log"></div>
-  </section>
-</main>
-<footer>Kol transaction katsigniha nta f Solflare. Had site ma kaychouf w ma kaykhzen 7ta clé privée. Les swaps kaydouzou men Jupiter. Memecoins y9dro ywselou l 0 f d9i9a — ma t7ett ghir li m9ad tkhser.</footer>
+    <details>
+      <summary>Filtres ▾</summary>
+      <div class="g2">
+        <div><label>Liquidité min ($)</label><input id="fLiq" type="number" inputmode="numeric" value="40000"></div>
+        <div><label>Buys 5m min</label><input id="fBuys" type="number" inputmode="numeric" value="40"></div>
+        <div><label>MC min ($)</label><input id="fMcMin" type="number" inputmode="numeric" value="50000"></div>
+        <div><label>MC max ($)</label><input id="fMcMax" type="number" inputmode="numeric" value="5000000"></div>
+        <div><label>Ratio buys/sells min</label><input id="fRatio" type="number" inputmode="decimal" step="0.1" value="1.3"></div>
+        <div><label>Dev max (%)</label><input id="fDev" type="number" inputmode="decimal" step="0.5" value="5"></div>
+        <div><label>Pump 5m max (%)</label><input id="fV5" type="number" inputmode="numeric" value="30"></div>
+        <div><label>Pump 1h max (%)</label><input id="fV1h" type="number" inputmode="numeric" value="200"></div>
+        <div><label>Top holder max (%)</label><input id="fTop1" type="number" inputmode="decimal" step="0.5" value="5"></div>
+        <div><label>Top 10 max (%)</label><input id="fTop10" type="number" inputmode="numeric" value="30"></div>
+        <div><label>Âge min (min)</label><input id="fAgeMin" type="number" inputmode="numeric" value="10"></div>
+        <div><label>Âge max (h)</label><input id="fAgeMax" type="number" inputmode="numeric" value="24"></div>
+      </div>
+    </details>
+  </div>
+
+  <div class="ttl" style="padding:0 4px">Candidats</div>
+  <div id="snList"><div class="empty">Démarre le sniper pour scanner.</div></div>
+</section>
+
+<!-- ===== POSITIONS ===== -->
+<section class="page" id="p-pos">
+  <div class="card">
+    <div class="ttl">Take profit / Stop loss</div>
+    <div class="g2">
+      <div><label>Take profit (%)</label><input id="tp" type="number" inputmode="numeric" value="100"></div>
+      <div><label>Stop loss (%)</label><input id="sl" type="number" inputmode="numeric" value="35"></div>
+    </div>
+    <div class="sw" style="margin-top:6px"><span>Vente auto TP/SL<div class="small mut">Solflare demande confirmation</div></span><label class="tg"><input type="checkbox" id="autoSell" checked><span></span></label></div>
+  </div>
+  <div class="ttl" style="padding:0 4px;display:flex;justify-content:space-between">Positions & historique <a href="#" onclick="clearTrades();return false" style="text-transform:none">Effacer</a></div>
+  <div id="trades"></div>
+</section>
+
+<!-- ===== REGLAGES ===== -->
+<section class="page" id="p-set">
+  <div class="card">
+    <div class="g2">
+      <div><label>Slippage max (%)</label><input id="slip" type="number" inputmode="decimal" value="15"></div>
+      <div><label>Priority fee max (SOL)</label><input id="prio" type="number" inputmode="decimal" step="0.0005" value="0.002"></div>
+    </div>
+    <label>RPC (Helius conseillé)</label>
+    <input id="rpc" placeholder="vide = RPC publics" autocapitalize="off" spellcheck="false">
+    <label>Clé API Jupiter (optionnel)</label>
+    <input id="jupKey" placeholder="vide = lite-api gratuit" autocapitalize="off" spellcheck="false">
+    <div class="sw" style="margin-top:8px"><span>Écran toujours allumé<div class="small mut">Garde le sniper actif tant que la page est ouverte</div></span><label class="tg"><input type="checkbox" id="wake"><span></span></label></div>
+    <div class="sw"><span>Wallet</span><span class="mut small" id="walletLbl">Pas connecté</span></div>
+  </div>
+  <div class="card"><div class="ttl">Log</div><div id="log"></div></div>
+  <div class="foot">Kol transaction katsigniha nta f Solflare. Had site ma kaychouf w ma kaykhzen 7ta clé privée. Les swaps kaydouzou men Jupiter. Memecoins y9dro ywselou l 0 f d9i9a.</div>
+</section>
+
+<nav class="tabs">
+  <button class="on" data-p="trade" onclick="tab('trade')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M17 7H9M17 7v8"/></svg>Trade</button>
+  <button data-p="sniper" onclick="tab('sniper')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Sniper<span class="badge" id="bSn"></span></button>
+  <button data-p="pos" onclick="tab('pos')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg>Positions</button>
+  <button data-p="set" onclick="tab('set')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>Réglages</button>
+</nav>
 
 <script>
 const W = solanaWeb3;
-const SOL_MINT = 'So11111111111111111111111111111111111111112';
-const LAMPORTS = 1e9;
-const $ = id => document.getElementById(id);
-const fmt$ = n => n==null?'—':'$'+(n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':(+n).toFixed(n<1?6:2));
-const pct = n => n==null?'—':(n>0?'+':'')+(+n).toFixed(2)+'%';
-const short = a => a? a.slice(0,4)+'…'+a.slice(-4):'';
-const ageStr = ms => { const m=ms/60000; return m<60? Math.round(m)+' min' : m<1440? (m/60).toFixed(1)+' h' : (m/1440).toFixed(1)+' j'; };
+const SOL_MINT='So11111111111111111111111111111111111111112', LAMPORTS=1e9;
+const $=id=>document.getElementById(id);
+const fmt$=n=>n==null?'—':'$'+(n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':(+n).toFixed(n<1?6:2));
+const pct=n=>n==null?'—':(n>0?'+':'')+(+n).toFixed(1)+'%';
+const short=a=>a?a.slice(0,4)+'…'+a.slice(-4):'';
+const ageStr=ms=>{const m=ms/60000;return m<60?Math.round(m)+' min':m<1440?(m/60).toFixed(1)+' h':(m/1440).toFixed(1)+' j';};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-/* ---------- persistence of settings ---------- */
-const SETTINGS = ['fLiq','fMcMin','fMcMax','fRatio','fBuys','fV5','fV1h','fTop1','fTop10','fDev','fAgeMin','fAgeMax','snAmt','snMax','snInt','slip','prio','rpc','jupKey','tp','sl','buyAmt'];
-const CHECKS = ['snAuto','snDevUnknown','autoSell'];
-function load(k,d){ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v);}catch{return d;} }
-function save(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch{} }
-const saved = load('ms_settings',{});
+/* ---------- tabs ---------- */
+function tab(p){ document.querySelectorAll('.page').forEach(x=>x.classList.toggle('on',x.id==='p-'+p)); document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.p===p)); window.scrollTo(0,0); if(p==='sniper'){ $('bSn').style.display='none'; } }
+
+/* ---------- settings persistence ---------- */
+const SETTINGS=['fLiq','fMcMin','fMcMax','fRatio','fBuys','fV5','fV1h','fTop1','fTop10','fDev','fAgeMin','fAgeMax','snAmt','snMax','snInt','slip','prio','rpc','jupKey','tp','sl','buyAmt'];
+const CHECKS=['snAuto','snDevUnknown','autoSell','wake'];
+function load(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch{return d;}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+const saved=load('ms_settings',{});
 SETTINGS.forEach(id=>{ if(saved[id]!=null) $(id).value=saved[id]; $(id).addEventListener('change',persist); });
 CHECKS.forEach(id=>{ if(saved[id]!=null) $(id).checked=saved[id]; $(id).addEventListener('change',persist); });
 function persist(){ const o={}; SETTINGS.forEach(id=>o[id]=$(id).value); CHECKS.forEach(id=>o[id]=$(id).checked); save('ms_settings',o); conn=null; rpcIdx=0; }
-const num = id => parseFloat($(id).value);
+const num=id=>parseFloat($(id).value);
 
-/* ---------- log ---------- */
-function log(msg, cls=''){ const t=new Date().toLocaleTimeString(); const d=document.createElement('div'); if(cls) d.className=cls; d.textContent=`[${t}] ${msg}`; $('log').prepend(d); }
+/* ---------- log & toast ---------- */
+function log(msg,cls=''){ const d=document.createElement('div'); if(cls) d.className=cls; d.textContent=`[${new Date().toLocaleTimeString()}] ${msg}`; $('log').prepend(d); while($('log').children.length>200) $('log').lastChild.remove(); }
+let toastT;
+function toast(html,ms=5000){ const t=$('toast'); t.innerHTML=html; t.classList.add('on'); clearTimeout(toastT); if(ms) toastT=setTimeout(()=>t.classList.remove('on'),ms); }
+function msg(text,cls=''){ toast(`<div class="${cls}" style="font-weight:600">${esc(text)}</div>`,3500); log(text,cls); }
+function vibrate(){ try{ navigator.vibrate&&navigator.vibrate([80,40,80]); }catch{} }
+function beep(){ try{ const a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(); o.frequency.value=880; o.connect(a.destination); o.start(); o.stop(a.currentTime+.15);}catch{} }
 
-/* ---------- connection ---------- */
-// RPC: le tien d'abord, puis des RPC publics qui acceptent le navigateur. Bascule auto si 403/429.
+/* ---------- wake lock (écran allumé) ---------- */
+let wl=null;
+async function applyWake(){
+  try{
+    if($('wake').checked && 'wakeLock' in navigator){ if(!wl){ wl=await navigator.wakeLock.request('screen'); wl.addEventListener('release',()=>wl=null);} }
+    else if(wl){ await wl.release(); wl=null; }
+  }catch(e){ log('Écran allumé: non supporté ici'); }
+}
+$('wake').addEventListener('change',applyWake);
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') applyWake(); });
+
+/* ---------- RPC avec bascule ---------- */
 const PUBLIC_RPCS=['https://solana-rpc.publicnode.com','https://solana.drpc.org','https://api.mainnet-beta.solana.com'];
 let conn=null, rpcIdx=0;
-function rpcList(){ const u=$('rpc').value.trim(); return u? [u,...PUBLIC_RPCS] : PUBLIC_RPCS; }
+function rpcList(){ const u=$('rpc').value.trim(); return u?[u,...PUBLIC_RPCS]:PUBLIC_RPCS; }
 function rpc(){ if(!conn){ const l=rpcList(); conn=new W.Connection(l[rpcIdx%l.length],'confirmed'); } return conn; }
 async function onRpc(fn){
   const n=rpcList().length; let last;
   for(let i=0;i<n;i++){
     try{ return await fn(rpc()); }
     catch(e){ last=e; const m=String(e.message||e);
-      if(/403|429|forbidden|Too many|fetch|CORS|NetworkError/i.test(m)){ rpcIdx++; conn=null; log('RPC bloqué, bascule → '+rpcList()[rpcIdx%n]); continue; }
+      if(/403|429|forbidden|Too many|fetch|CORS|NetworkError|Load failed/i.test(m)){ rpcIdx++; conn=null; log('RPC bloqué, bascule → '+rpcList()[rpcIdx%n]); continue; }
       throw e; }
   }
-  throw new Error('Tous les RPC ont refusé — mets un RPC Helius dans Réglages ('+(last?.message||'')+')');
+  throw new Error('RPC refusés — mets un RPC Helius dans Réglages');
 }
 
 /* ---------- wallet ---------- */
 let wallet=null;
 async function connect(){
   const p=window.solflare;
-  if(!p){ alert('Solflare introuvable. Installe l’extension ou ouvre le site dans le navigateur de l’app Solflare.'); return; }
-  try{ await p.connect(); wallet=p.publicKey; $('walletLbl').textContent=short(wallet.toBase58()); $('connectBtn').textContent='Connecté'; log('Wallet connecté '+wallet.toBase58()); refreshBal(); refreshHold(); }
-  catch(e){ log('Connexion refusée: '+e.message,'red'); }
+  if(!p){ msg('Ouvre ce site dans le navigateur de l’app Solflare','red'); return; }
+  try{ await p.connect(); wallet=p.publicKey; $('walletLbl').textContent=short(wallet.toBase58()); $('connectBtn').textContent=short(wallet.toBase58()); $('connectBtn').className='ghost'; log('Wallet connecté '+wallet.toBase58()); refreshBal(); refreshHold(); }
+  catch(e){ msg('Connexion refusée','red'); }
 }
-async function refreshBal(){ if(!wallet) return; try{ const b=await onRpc(c=>c.getBalance(wallet)); $('solBal').textContent=(b/LAMPORTS).toFixed(4)+' SOL'; }catch(e){ log('Solde: '+e.message,'red'); } }
+async function refreshBal(){ if(!wallet) return; try{ const b=await onRpc(c=>c.getBalance(wallet)); $('solBal').textContent=(b/LAMPORTS).toFixed(3)+' SOL'; }catch(e){ log('Solde: '+e.message,'red'); } }
 
 /* ---------- DexScreener ---------- */
 async function ds(path){ const r=await fetch('https://api.dexscreener.com'+path); if(!r.ok) throw new Error('DexScreener '+r.status); return r.json(); }
-function bestPair(pairs){ return (pairs||[]).filter(p=>p.chainId==='solana').sort((a,b)=>(b.liquidity?.usd||0)-(a.liquidity?.usd||0))[0]; }
-async function pairsForMints(mints){ // up to 30
+async function pairsForMints(mints){
   const out={}; if(!mints.length) return out;
   const arr=await ds('/tokens/v1/solana/'+mints.join(','));
-  (arr||[]).forEach(p=>{ const m=p.baseToken.address; if(!out[m] || (p.liquidity?.usd||0)>(out[m].liquidity?.usd||0)) out[m]=p; });
+  (arr||[]).forEach(p=>{ const m=p.baseToken.address; if(!out[m]||(p.liquidity?.usd||0)>(out[m].liquidity?.usd||0)) out[m]=p; });
   return out;
 }
 async function resolveInput(s){
-  s=s.trim(); if(!s) throw new Error('Entrée vide');
+  s=s.trim(); if(!s) throw new Error('Colle une adresse');
   let m;
   if((m=s.match(/pump\.fun\/(?:coin\/)?([1-9A-HJ-NP-Za-km-z]{32,44})/))) return m[1];
   if((m=s.match(/dexscreener\.com\/solana\/([1-9A-HJ-NP-Za-km-z]{32,44})/))){
     const r=await ds('/latest/dex/pairs/solana/'+m[1]); const p=(r.pairs||[])[0]||r.pair;
-    if(p) return p.baseToken.address; return m[1];
+    return p?p.baseToken.address:m[1];
   }
   if(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s)) return s;
   throw new Error('Format non reconnu');
 }
+async function pasteTok(){ try{ $('tokInput').value=await navigator.clipboard.readText(); loadToken(); }catch{ $('tokInput').focus(); } }
 
-/* ---------- on-chain checks ---------- */
+/* ---------- checks on-chain ---------- */
 async function mintInfo(mint){
   const r=await onRpc(c=>c.getParsedAccountInfo(new W.PublicKey(mint)));
   const info=r.value?.data?.parsed?.info; if(!info) throw new Error('Mint introuvable');
-  return {mintAuth:info.mintAuthority, freezeAuth:info.freezeAuthority, supply:+info.supply, decimals:info.decimals, program:r.value.owner.toBase58()};
+  return {mintAuth:info.mintAuthority,freezeAuth:info.freezeAuthority,supply:+info.supply,decimals:info.decimals};
 }
-async function holders(mint, supply){
+async function holders(mint,supply){
   const r=await onRpc(c=>c.getTokenLargestAccounts(new W.PublicKey(mint)));
   const accs=r.value.slice(0,20);
   const infos=await onRpc(c=>c.getMultipleParsedAccounts(accs.map(a=>a.address)));
   const list=[];
   accs.forEach((a,i)=>{
     const owner=infos.value[i]?.data?.parsed?.info?.owner; if(!owner) return;
-    // PDA (hors courbe) = pool / bonding curve → on l'exclut
     let onCurve=true; try{ onCurve=W.PublicKey.isOnCurve(new W.PublicKey(owner).toBytes()); }catch{}
-    if(!onCurve) return;
-    list.push({owner, pct:+a.amount/supply*100});
+    if(!onCurve) return; // PDA = pool / bonding curve
+    list.push({owner,pct:+a.amount/supply*100});
   });
-  const top1=list[0]?.pct||0, top10=list.slice(0,10).reduce((s,h)=>s+h.pct,0);
-  return {top1, top10, list};
+  return {top1:list[0]?.pct||0, top10:list.slice(0,10).reduce((s,h)=>s+h.pct,0)};
 }
-async function devPct(mint, supply){
-  // créateur via pump.fun (si dispo), puis son solde
+async function devPct(mint,supply){
   let creator=null;
   for(const u of ['https://frontend-api-v3.pump.fun/coins/'+mint,'https://frontend-api.pump.fun/coins/'+mint]){
     try{ const r=await fetch(u); if(r.ok){ const j=await r.json(); creator=j.creator; if(creator) break; } }catch{}
   }
-  if(!creator) return {pct:null, creator:null};
+  if(!creator) return {pct:null};
   try{
     const r=await onRpc(c=>c.getParsedTokenAccountsByOwner(new W.PublicKey(creator),{mint:new W.PublicKey(mint)}));
     const amt=r.value.reduce((s,a)=>s+ +a.account.data.parsed.info.tokenAmount.amount,0);
-    return {pct:amt/supply*100, creator};
-  }catch{ return {pct:null, creator}; }
+    return {pct:amt/supply*100};
+  }catch{ return {pct:null}; }
 }
-
-/* ---------- full evaluation ---------- */
 function dexChecks(p){
-  const liq=p.liquidity?.usd||0, b=p.txns?.m5?.buys||0, s=p.txns?.m5?.sells||0;
-  const c5=p.priceChange?.m5||0, c1=p.priceChange?.h1||0;
-  const age=p.pairCreatedAt? Date.now()-p.pairCreatedAt : null;
-  const ratio=s? b/s : (b?99:0);
+  const liq=p.liquidity?.usd||0,b=p.txns?.m5?.buys||0,s=p.txns?.m5?.sells||0,c5=p.priceChange?.m5||0,c1=p.priceChange?.h1||0;
+  const age=p.pairCreatedAt?Date.now()-p.pairCreatedAt:null, ratio=s?b/s:(b?99:0);
   return [
-    {k:'liq',  label:'Liquidité ≥ '+fmt$(num('fLiq')), ok: liq>=num('fLiq'), d:fmt$(liq)},
-    {k:'flux', label:'Flux buys/sells', ok: ratio>=num('fRatio') && b>=num('fBuys'), d:`${b}/${s}`},
-    {k:'vert', label:'Pas de pump vertical', ok: c5<=num('fV5') && c1<=num('fV1h'), d:`5m ${pct(c5)} · 1h ${pct(c1)}`},
-    {k:'age',  label:'Âge', ok: age!=null && age>=num('fAgeMin')*60000 && age<=num('fAgeMax')*3600000, d: age?ageStr(age):'?'},
+    {k:'liq', label:'Liquidité', ok:liq>=num('fLiq'), d:fmt$(liq)},
+    {k:'flux',label:'Flux', ok:ratio>=num('fRatio')&&b>=num('fBuys'), d:`${b}/${s}`},
+    {k:'vert',label:'Pas de pump vertical', ok:c5<=num('fV5')&&c1<=num('fV1h'), d:`1h ${pct(c1)}`},
+    {k:'age', label:'Âge', ok:age!=null&&age>=num('fAgeMin')*60000&&age<=num('fAgeMax')*3600000, d:age?ageStr(age):'?'},
   ];
 }
 async function chainChecks(mint){
   const mi=await mintInfo(mint);
-  const [h,dv]=await Promise.all([holders(mint,mi.supply).catch(e=>({err:e.message})), devPct(mint,mi.supply)]);
-  const devOk = dv.pct==null ? ($('snDevUnknown').checked?true:null) : dv.pct<=num('fDev');
-  return {mi, checks:[
-    {k:'mint',  label:'Mint révoquée', ok: !mi.mintAuth},
-    {k:'freeze',label:'Freeze révoqué', ok: !mi.freezeAuth},
-    {k:'top',   label:'Top holders', ok: h.err? null : (h.top1<=num('fTop1') && h.top10<=num('fTop10')), d: h.err? 'RPC limité' : `top1 ${h.top1.toFixed(1)}% · top10 ${h.top10.toFixed(1)}%`},
-    {k:'dev',   label:'Dev %', ok: devOk, d: dv.pct==null? 'inconnu' : dv.pct.toFixed(2)+'%'},
+  const [h,dv]=await Promise.all([holders(mint,mi.supply).catch(e=>({err:1})),devPct(mint,mi.supply)]);
+  const devOk=dv.pct==null?($('snDevUnknown').checked?true:null):dv.pct<=num('fDev');
+  return {mi,checks:[
+    {k:'mint',  label:'Mint révoquée', ok:!mi.mintAuth},
+    {k:'freeze',label:'Freeze révoqué', ok:!mi.freezeAuth},
+    {k:'top',   label:'Top holders', ok:h.err?null:(h.top1<=num('fTop1')&&h.top10<=num('fTop10')), d:h.err?'RPC':`${h.top1.toFixed(1)}% · ${h.top10.toFixed(0)}%`},
+    {k:'dev',   label:'Dev', ok:devOk, d:dv.pct==null?'?':dv.pct.toFixed(1)+'%'},
   ]};
 }
-const chipsHtml = cs => cs.map(c=>`<span class="chip ${c.ok===true?'ok':c.ok===false?'bad':'wait'}" title="${c.d||''}">${c.ok===true?'✓':c.ok===false?'✗':'?'} ${c.label}${c.d?' <span class=mut>'+c.d+'</span>':''}</span>`).join('');
+const chip=c=>`<span class="chip ${c.ok===true?'ok':c.ok===false?'bad':'wait'}">${c.ok===true?'✓':c.ok===false?'✗':'?'} ${esc(c.label)}${c.d?` <span class="mut">${esc(c.d)}</span>`:''}</span>`;
+function scoreHtml(cs){ const ok=cs.filter(c=>c.ok===true).length, n=cs.length; const col=ok===n?'var(--ok)':ok>=n-2?'var(--warn)':'var(--bad)'; return `<span class="score" style="color:${col};background:${col}22">${ok}/${n}</span>`; }
 
 /* ---------- token panel ---------- */
-let cur=null; // {mint, pair, decimals, program}
+let cur=null;
 async function loadToken(input){
+  tab('trade');
   try{
     const mint=await resolveInput(input||$('tokInput').value);
-    $('tokInput').value=mint; $('tokBox').innerHTML='Chargement…';
-    const pairs=await pairsForMints([mint]); const p=pairs[mint];
-    if(!p) throw new Error('Pas de pair trouvée sur DexScreener (trop récent ?)');
+    $('tokInput').value=mint; $('tokBox').innerHTML='<div class="empty">Chargement…</div>';
+    const p=(await pairsForMints([mint]))[mint];
+    if(!p) throw new Error('Pas de pair sur DexScreener (trop récent ?)');
     cur={mint,pair:p};
-    renderToken([...dexChecks(p), {label:'Checks on-chain…',ok:null}]);
-    try{
-      const cc=await chainChecks(mint); cur.decimals=cc.mi.decimals; cur.program=cc.mi.program;
-      renderToken([...dexChecks(p), ...cc.checks]);
-    }catch(e){
-      renderToken([...dexChecks(p), {label:'Checks on-chain indispo', ok:null, d:e.message}]);
-      log('Checks on-chain: '+e.message,'red');
-    }
+    renderToken([...dexChecks(p),{label:'Checks on-chain…',ok:null}]);
+    try{ const cc=await chainChecks(mint); cur.decimals=cc.mi.decimals; renderToken([...dexChecks(p),...cc.checks]); }
+    catch(e){ renderToken([...dexChecks(p),{label:'On-chain indispo',ok:null}]); log('Checks on-chain: '+e.message,'red'); }
     refreshHold();
-  }catch(e){ $('tokBox').innerHTML=`<span class="red">${e.message}</span>`; }
+  }catch(e){ $('tokBox').innerHTML=`<div class="empty red">${esc(e.message)}</div>`; }
 }
 function renderToken(checks){
-  const p=cur.pair;
+  const p=cur.pair, c5=p.priceChange?.m5||0, c1=p.priceChange?.h1||0;
   $('tokBox').innerHTML=`
-   <div class="row" style="justify-content:space-between"><div><b style="font-size:16px">$${p.baseToken.symbol}</b> <span class="mut">${p.baseToken.name} · ${short(cur.mint)}</span></div>
-   <a href="${p.url}" target="_blank" rel="noopener">Chart ↗</a></div>
-   <div class="grid3" style="margin-top:8px">
-     <div class="stat"><small>Prix</small><b>$${(+p.priceUsd).toPrecision(4)}</b></div>
+   <div class="tok-h"><div><div class="sym">$${esc(p.baseToken.symbol)}</div><div class="sub">${esc(p.baseToken.name)} · ${short(cur.mint)}</div></div>
+     <div style="text-align:right">${scoreHtml(checks)}<div style="margin-top:6px"><a href="${esc(p.url)}" target="_blank" rel="noopener">Chart ↗</a></div></div></div>
+   <div class="g3" style="margin-top:12px">
+     <div class="stat"><small>Prix</small><b>$${(+p.priceUsd).toPrecision(3)}</b></div>
      <div class="stat"><small>Market cap</small><b>${fmt$(p.marketCap||p.fdv)}</b></div>
      <div class="stat"><small>Liquidité</small><b>${fmt$(p.liquidity?.usd)}</b></div>
-     <div class="stat"><small>5 min</small><b class="${(p.priceChange?.m5||0)>=0?'green':'red'}">${pct(p.priceChange?.m5)}</b></div>
-     <div class="stat"><small>1 h</small><b class="${(p.priceChange?.h1||0)>=0?'green':'red'}">${pct(p.priceChange?.h1)}</b></div>
-     <div class="stat"><small>Buys/Sells 5m</small><b>${p.txns?.m5?.buys||0} / ${p.txns?.m5?.sells||0}</b></div>
+     <div class="stat"><small>5 min</small><b class="${c5>=0?'green':'red'}">${pct(c5)}</b></div>
+     <div class="stat"><small>1 h</small><b class="${c1>=0?'green':'red'}">${pct(c1)}</b></div>
+     <div class="stat"><small>B/S 5m</small><b>${p.txns?.m5?.buys||0}/${p.txns?.m5?.sells||0}</b></div>
    </div>
-   <div class="chips">${chipsHtml(checks)}</div>`;
+   <div class="chips">${checks.map(chip).join('')}</div>`;
 }
 
-/* ---------- Jupiter swap ---------- */
-function jupBase(){ return $('jupKey').value.trim()? 'https://api.jup.ag/swap/v1' : 'https://lite-api.jup.ag/swap/v1'; }
+/* ---------- Jupiter ---------- */
+function jupBase(){ return $('jupKey').value.trim()?'https://api.jup.ag/swap/v1':'https://lite-api.jup.ag/swap/v1'; }
 function jupHeaders(){ const h={'Content-Type':'application/json'}; const k=$('jupKey').value.trim(); if(k) h['x-api-key']=k; return h; }
-async function swap(inputMint, outputMint, amountRaw){
+async function swap(inputMint,outputMint,amountRaw){
   if(!wallet) throw new Error('Connecte Solflare d’abord');
   const bps=Math.round((num('slip')||15)*100);
   const q=await fetch(`${jupBase()}/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amountRaw}&slippageBps=${bps}`,{headers:jupHeaders()}).then(r=>r.json());
@@ -316,32 +389,32 @@ async function swap(inputMint, outputMint, amountRaw){
   const tx=W.VersionedTransaction.deserialize(Uint8Array.from(atob(s.swapTransaction),c=>c.charCodeAt(0)));
   const res=await window.solflare.signAndSendTransaction(tx);
   const sig=res.signature||res;
-  log('Tx envoyée '+sig);
+  toast('<div style="font-weight:600">Transaction envoyée…</div>',0);
   await confirmSig(sig);
   return {sig,q};
 }
 async function confirmSig(sig){
   for(let i=0;i<40;i++){
     const st=(await onRpc(c=>c.getSignatureStatuses([sig]))).value[0];
-    if(st?.err) throw new Error('Tx échouée');
-    if(st && (st.confirmationStatus==='confirmed'||st.confirmationStatus==='finalized')){ log('Confirmée ✓ '+short(sig),'green'); return; }
+    if(st?.err) throw new Error('Transaction échouée');
+    if(st&&(st.confirmationStatus==='confirmed'||st.confirmationStatus==='finalized')) return;
     await new Promise(r=>setTimeout(r,1500));
   }
   log('Pas encore confirmée, vérifie sur Solscan','red');
 }
 
 /* ---------- buy / sell ---------- */
-async function buy(mint=cur?.mint, sol=num('buyAmt'), pair=cur?.pair){
+async function buy(mint=cur?.mint,sol=num('buyAmt'),pair=cur?.pair){
   try{
     if(!mint) throw new Error('Charge un token');
-    log(`Achat ${sol} SOL de ${pair?.baseToken?.symbol||short(mint)}…`);
-    const {sig,q}=await swap(SOL_MINT, mint, Math.round(sol*LAMPORTS));
+    const sym=pair?.baseToken?.symbol||short(mint);
+    const {sig,q}=await swap(SOL_MINT,mint,Math.round(sol*LAMPORTS));
     let price=+pair?.priceUsd||null;
     try{ const p=(await pairsForMints([mint]))[mint]; if(p) price=+p.priceUsd; }catch{}
-    addTrade({type:'buy',mint,sym:pair?.baseToken?.symbol||short(mint),sol,tokens:q.outAmount,price,sig,ts:Date.now(),open:true});
-    refreshBal(); refreshHold();
-    return true;
-  }catch(e){ log('Achat: '+e.message,'red'); return false; }
+    addTrade({type:'buy',mint,sym,sol,tokens:q.outAmount,price,sig,ts:Date.now(),open:true});
+    msg(`✓ Acheté ${sol} SOL de $${sym}`,'green'); vibrate();
+    refreshBal(); refreshHold(); return true;
+  }catch(e){ msg('Achat: '+e.message,'red'); return false; }
 }
 async function tokenBalance(mint){
   const r=await onRpc(c=>c.getParsedTokenAccountsByOwner(wallet,{mint:new W.PublicKey(mint)}));
@@ -349,38 +422,42 @@ async function tokenBalance(mint){
 }
 async function refreshHold(){
   if(!wallet||!cur) return;
-  try{ const b=await tokenBalance(cur.mint); const d=cur.decimals??6; $('holdLbl').textContent=(Number(b)/10**d).toLocaleString(undefined,{maximumFractionDigits:2}); }catch{}
+  try{ const b=await tokenBalance(cur.mint); $('holdLbl').textContent=(Number(b)/10**(cur.decimals??6)).toLocaleString(undefined,{maximumFractionDigits:0}); }catch{}
 }
-async function sell(pctSell, mint=cur?.mint, sym=cur?.pair?.baseToken?.symbol){
+async function sell(pctSell,mint=cur?.mint,sym=cur?.pair?.baseToken?.symbol){
   try{
     if(!mint) throw new Error('Charge un token'); if(!wallet) throw new Error('Connecte Solflare');
-    const bal=await tokenBalance(mint); if(bal===0n) throw new Error('Solde token = 0');
-    const amt= pctSell>=100? bal : bal*BigInt(pctSell)/100n;
-    log(`Vente ${pctSell}% de ${sym||short(mint)}…`);
-    const {sig,q}=await swap(mint, SOL_MINT, amt.toString());
-    addTrade({type:'sell',mint,sym:sym||short(mint),sol:+q.outAmount/LAMPORTS,pct:pctSell,sig,ts:Date.now()});
+    const bal=await tokenBalance(mint); if(bal===0n) throw new Error('Tu n’as pas ce token');
+    const amt=pctSell>=100?bal:bal*BigInt(pctSell)/100n;
+    const {sig,q}=await swap(mint,SOL_MINT,amt.toString());
+    const solOut=+q.outAmount/LAMPORTS;
+    addTrade({type:'sell',mint,sym:sym||short(mint),sol:solOut,pct:pctSell,sig,ts:Date.now()});
     if(pctSell>=100) closePositions(mint);
+    msg(`✓ Vendu ${pctSell}% de $${sym||''} → ${solOut.toFixed(3)} SOL`,'green'); vibrate();
     refreshBal(); refreshHold(); return true;
-  }catch(e){ log('Vente: '+e.message,'red'); return false; }
+  }catch(e){ msg('Vente: '+e.message,'red'); return false; }
 }
 
-/* ---------- trades & TP/SL ---------- */
+/* ---------- positions / TP-SL ---------- */
 let trades=load('ms_trades',[]);
+const livePrice={};
 function addTrade(t){ trades.unshift(t); save('ms_trades',trades); renderTrades(); }
 function closePositions(m){ trades.forEach(t=>{ if(t.mint===m&&t.type==='buy') t.open=false; }); save('ms_trades',trades); renderTrades(); }
 function clearTrades(){ if(confirm('Effacer l’historique ?')){ trades=[]; save('ms_trades',trades); renderTrades(); } }
-const livePrice={};
 function renderTrades(){
-  if(!trades.length){ $('trades').innerHTML='Aucun trade pour l\'instant.'; return; }
-  $('trades').innerHTML='<table><thead><tr><th></th><th>Token</th><th>SOL</th><th>PnL</th><th></th></tr></thead><tbody>'+
-   trades.slice(0,40).map(t=>{
-     const lp=livePrice[t.mint]; const pnl= t.type==='buy'&&t.open&&t.price&&lp? (lp/t.price-1)*100 : null;
-     return `<tr><td class="${t.type==='buy'?'green':'red'}">${t.type==='buy'?'Achat':'Vente'}</td>
-      <td><a href="#" onclick="loadToken('${t.mint}');return false">${t.sym}</a><div class="mut">${new Date(t.ts).toLocaleTimeString()}</div></td>
-      <td>${(+t.sol).toFixed(3)}</td>
-      <td class="${pnl==null?'mut':pnl>=0?'green':'red'}">${pnl==null?(t.type==='buy'&&!t.open?'fermé':'—'):pct(pnl)}</td>
-      <td><a href="https://solscan.io/tx/${t.sig}" target="_blank" rel="noopener">tx</a></td></tr>`;
-   }).join('')+'</tbody></table>';
+  if(!trades.length){ $('trades').innerHTML='<div class="empty">Aucun trade pour l’instant.</div>'; return; }
+  const open=trades.filter(t=>t.type==='buy'&&t.open), hist=trades.filter(t=>!(t.type==='buy'&&t.open)).slice(0,30);
+  const openHtml=open.map(t=>{
+    const lp=livePrice[t.mint], pnl=t.price&&lp?(lp/t.price-1)*100:null;
+    return `<div class="item" style="border-color:${pnl==null?'var(--line)':pnl>=0?'rgba(34,211,154,.4)':'rgba(255,84,104,.4)'}">
+      <div class="h"><b>$${esc(t.sym)}</b><span class="${pnl==null?'mut':pnl>=0?'green':'red'}" style="font-size:20px;font-weight:700">${pnl==null?'…':pct(pnl)}</span></div>
+      <div class="meta"><span>Mise <b>${(+t.sol).toFixed(3)} SOL</b></span><span>Entrée <b>$${t.price?(+t.price).toPrecision(3):'?'}</b></span><span>${new Date(t.ts).toLocaleTimeString()}</span></div>
+      <div class="g3" style="margin-top:10px"><button onclick="loadToken('${t.mint}')">Voir</button><button onclick="sell(50,'${t.mint}','${esc(t.sym)}')">50%</button><button class="bad" onclick="sell(100,'${t.mint}','${esc(t.sym)}')">Tout</button></div>
+    </div>`; }).join('');
+  const histHtml=hist.map(t=>`<div class="item" style="padding:10px 12px"><div class="h"><span><span class="${t.type==='buy'?'green':'red'}" style="font-weight:600">${t.type==='buy'?'Achat':'Vente'}</span> $${esc(t.sym)}</span>
+      <span class="small"><b>${(+t.sol).toFixed(3)} SOL</b> · <a href="https://solscan.io/tx/${t.sig}" target="_blank" rel="noopener">tx</a></span></div>
+      <div class="meta">${new Date(t.ts).toLocaleString()}</div></div>`).join('');
+  $('trades').innerHTML=(open.length?'<div class="ttl" style="padding:0 4px">Ouvertes</div>'+openHtml:'')+(hist.length?'<div class="ttl" style="padding:6px 4px 0">Historique</div>'+histHtml:'');
 }
 const tpslBusy=new Set();
 async function watchPositions(){
@@ -392,94 +469,93 @@ async function watchPositions(){
         const p=pairs[m]; if(!p) continue; livePrice[m]=+p.priceUsd;
         const entry=trades.find(t=>t.mint===m&&t.type==='buy'&&t.open).price;
         const ch=(livePrice[m]/entry-1)*100;
-        const hit= ch>=num('tp')? 'TP' : ch<=-num('sl')? 'SL' : null;
-        if(hit && !tpslBusy.has(m)){
-          tpslBusy.add(m);
-          log(`${hit} touché sur ${p.baseToken.symbol} (${pct(ch)})`, hit==='TP'?'green':'red');
-          notify(`${hit} ${p.baseToken.symbol} ${pct(ch)}`);
-          if($('autoSell').checked && wallet){ await sell(100,m,p.baseToken.symbol); }
+        const hit=ch>=num('tp')?'TP':ch<=-num('sl')?'SL':null;
+        if(hit&&!tpslBusy.has(m)){
+          tpslBusy.add(m); beep(); vibrate();
+          msg(`${hit} touché sur $${p.baseToken.symbol} (${pct(ch)})`,hit==='TP'?'green':'red');
+          if($('autoSell').checked&&wallet) await sell(100,m,p.baseToken.symbol);
           setTimeout(()=>tpslBusy.delete(m),60000);
         }
       }
-    }catch(e){}
+    }catch{}
     renderTrades();
   }
   setTimeout(watchPositions,15000);
 }
 
 /* ---------- sniper ---------- */
-let snOn=false, snTimer=null, snBuys=0;
-const seen=new Map(); // mint -> {pair, checks, status}
+let snOn=false,snTimer=null,snBuys=0,scanned=0;
+const seen=new Map();
 function toggleSniper(){
   snOn=!snOn; $('snDot').classList.toggle('on',snOn);
-  $('snBtn').textContent=snOn?'Arrêter':'Démarrer'; $('snBtn').className=snOn?'bad':'ok';
-  if(snOn){ snBuys=0; if(!wallet&&$('snAuto').checked) log('Attention: wallet pas connecté, achat auto impossible','red'); log('Sniper démarré'); if('Notification' in window && Notification.permission==='default') Notification.requestPermission(); scan(); }
-  else { clearTimeout(snTimer); log('Sniper arrêté'); }
+  $('snBtn').textContent=snOn?'Arrêter':'Démarrer le sniper'; $('snBtn').className=(snOn?'bad':'ok')+' big';
+  $('snState').textContent=snOn?'Sniper actif':'Sniper arrêté';
+  if(snOn){ snBuys=0; if(!wallet&&$('snAuto').checked) msg('Connecte Solflare pour l’achat auto','red'); if(!$('wake').checked){ $('wake').checked=true; persist(); applyWake(); } scan(); }
+  else clearTimeout(snTimer);
 }
 async function scan(){
   if(!snOn) return;
   try{
-    const [profiles,boosts]=await Promise.all([ds('/token-profiles/latest/v1').catch(()=>[]), ds('/token-boosts/latest/v1').catch(()=>[])]);
+    const [profiles,boosts]=await Promise.all([ds('/token-profiles/latest/v1').catch(()=>[]),ds('/token-boosts/latest/v1').catch(()=>[])]);
     const mints=[...new Set([...(profiles||[]),...(boosts||[])].filter(x=>x.chainId==='solana').map(x=>x.tokenAddress))];
-    // ajoute aussi ceux déjà vus et encore "en attente" pour les re-tester
-    const retry=[...seen.entries()].filter(([m,v])=>v.status==='watch').map(([m])=>m);
+    const retry=[...seen.entries()].filter(([,v])=>v.status==='watch').map(([m])=>m);
     const all=[...new Set([...mints,...retry])].slice(0,90);
     const pairMap={};
-    for(let i=0;i<all.length;i+=30) Object.assign(pairMap, await pairsForMints(all.slice(i,i+30)));
+    for(let i=0;i<all.length;i+=30) Object.assign(pairMap,await pairsForMints(all.slice(i,i+30)));
     for(const m of all){
       const p=pairMap[m]; if(!p) continue;
-      const prev=seen.get(m); if(prev && ['bought','fail','alert'].includes(prev.status)) { prev.pair=p; continue; }
-      const mc=p.marketCap||p.fdv||0;
-      const dc=dexChecks(p);
-      const mcOk=mc>=num('fMcMin')&&mc<=num('fMcMax');
-      const entry={pair:p, checks:dc, status:'watch'};
-      seen.set(m,entry);
-      if(!mcOk || !dc.every(c=>c.ok)) continue;      // pas encore bon → on re-testera
+      const prev=seen.get(m); if(prev&&['bought','fail','alert','buying'].includes(prev.status)){ prev.pair=p; continue; }
+      if(!prev) scanned++;
+      const mc=p.marketCap||p.fdv||0, dc=dexChecks(p);
+      const entry={pair:p,checks:dc,status:'watch'}; seen.set(m,entry);
+      if(!(mc>=num('fMcMin')&&mc<=num('fMcMax'))||!dc.every(c=>c.ok)) continue;
       entry.status='checking'; renderSn();
       try{
         const cc=await chainChecks(m); entry.checks=[...dc,...cc.checks];
-        const hard=cc.checks.filter(c=>c.k==='mint'||c.k==='freeze');
-        if(hard.some(c=>c.ok===false)){ entry.status='fail'; continue; }   // mint/freeze actifs = poubelle définitive
+        if(cc.checks.some(c=>(c.k==='mint'||c.k==='freeze')&&c.ok===false)){ entry.status='fail'; continue; }
         if(!entry.checks.every(c=>c.ok===true)){ entry.status='watch'; continue; }
-        entry.status='alert';
-        log(`🎯 ${p.baseToken.symbol} passe tous les checks (MC ${fmt$(mc)})`,'green');
-        notify(`🎯 ${p.baseToken.symbol} passe tous les checks`);
-        if($('snAuto').checked && wallet && snBuys<num('snMax')){
+        entry.status='alert'; beep(); vibrate();
+        if(!document.getElementById('p-sniper').classList.contains('on')){ $('bSn').textContent=[...seen.values()].filter(v=>v.status==='alert').length; $('bSn').style.display='block'; }
+        if($('snAuto').checked&&wallet&&snBuys<num('snMax')){
           snBuys++; entry.status='buying'; renderSn();
-          const ok=await buy(m, num('snAmt'), p);
-          entry.status= ok?'bought':'alert';
-          if(!ok) snBuys--;
+          const ok=await buy(m,num('snAmt'),p); entry.status=ok?'bought':'alert'; if(!ok) snBuys--;
+        }else{
+          toast(`<div class="r" style="justify-content:space-between"><div><b>🎯 $${esc(p.baseToken.symbol)}</b><div class="small mut">Tous les checks ✓ · MC ${fmt$(mc)}</div></div>
+            <button class="ok" onclick="snBuy('${m}')">Acheter ${num('snAmt')}</button></div>`,15000);
         }
       }catch(e){ entry.status='watch'; log('Checks '+p.baseToken.symbol+': '+e.message,'red'); }
     }
-    // nettoyage: garde 150 max
-    if(seen.size>150){ [...seen.keys()].slice(0,seen.size-150).forEach(k=>seen.delete(k)); }
+    if(seen.size>150) [...seen.keys()].slice(0,seen.size-150).forEach(k=>seen.delete(k));
   }catch(e){ log('Scan: '+e.message,'red'); }
   renderSn();
-  snTimer=setTimeout(scan, Math.max(10,num('snInt')||20)*1000);
+  snTimer=setTimeout(scan,Math.max(10,num('snInt')||20)*1000);
 }
-const ST={watch:['wait','surveillé'],checking:['wait','checks…'],fail:['bad','rejeté'],alert:['ok','🎯 prêt'],buying:['wait','achat…'],bought:['ok','acheté']};
+async function snBuy(m){ $('toast').classList.remove('on'); const e=seen.get(m); if(!e) return; e.status='buying'; renderSn(); const ok=await buy(m,num('snAmt'),e.pair); e.status=ok?'bought':'alert'; renderSn(); }
+const ST={watch:['wait','Surveillé'],checking:['wait','Checks…'],fail:['bad','Rejeté'],alert:['ok','🎯 Prêt'],buying:['wait','Achat…'],bought:['ok','Acheté']};
+const ORD={alert:0,buying:0,bought:1,checking:2,watch:3,fail:4};
 function renderSn(){
-  const rows=[...seen.entries()].map(([m,v])=>({m,...v}))
-    .sort((a,b)=>({alert:0,buying:0,bought:1,checking:2,watch:3,fail:4}[a.status]-({alert:0,buying:0,bought:1,checking:2,watch:3,fail:4}[b.status])) || (b.checks.filter(c=>c.ok).length-a.checks.filter(c=>c.ok).length))
-    .slice(0,25);
-  if(!rows.length){ $('snTable').innerHTML='<tr><td colspan="6" class="mut">Scan en cours…</td></tr>'; return; }
-  $('snTable').innerHTML=rows.map(r=>{ const p=r.pair; const s=ST[r.status];
-    return `<tr><td><b>$${p.baseToken.symbol}</b><div class="mut">${short(r.m)}</div><span class="chip ${s[0]}">${s[1]}</span></td>
-     <td>${fmt$(p.liquidity?.usd)}<div class="mut">${fmt$(p.marketCap||p.fdv)}</div></td>
-     <td class="${(p.priceChange?.m5||0)>=0?'green':'red'}">${pct(p.priceChange?.m5)}<div class="mut">${p.txns?.m5?.buys||0}/${p.txns?.m5?.sells||0}</div></td>
-     <td>${p.pairCreatedAt?ageStr(Date.now()-p.pairCreatedAt):'?'}</td>
-     <td><div class="chips" style="margin:0">${r.checks.map(c=>`<span class="chip ${c.ok===true?'ok':c.ok===false?'bad':'wait'}" title="${c.d||''}">${c.ok===true?'✓':c.ok===false?'✗':'?'} ${c.label.replace(/ ≥.*/,'')}</span>`).join('')}</div></td>
-     <td><button onclick="loadToken('${r.m}')">Voir</button>${r.status==='alert'?` <button class="ok" onclick="buy('${r.m}',num('snAmt'),seen.get('${r.m}').pair)">Acheter</button>`:''}</td></tr>`;
-  }).join('');
+  const vals=[...seen.values()];
+  $('kScan').textContent=scanned; $('kReady').textContent=vals.filter(v=>v.status==='alert').length; $('kBought').textContent=vals.filter(v=>v.status==='bought').length;
+  const rows=[...seen.entries()].map(([m,v])=>({m,...v})).filter(r=>r.status!=='fail')
+    .sort((a,b)=>ORD[a.status]-ORD[b.status]||b.checks.filter(c=>c.ok).length-a.checks.filter(c=>c.ok).length).slice(0,20);
+  if(!rows.length){ $('snList').innerHTML=`<div class="empty">${snOn?'Scan en cours…':'Démarre le sniper pour scanner.'}</div>`; return; }
+  $('snList').innerHTML=rows.map(r=>{ const p=r.pair,s=ST[r.status],c5=p.priceChange?.m5||0;
+    return `<div class="item" ${r.status==='alert'?'style="border-color:var(--ok)"':''}>
+      <div class="h"><div><b style="font-size:16px">$${esc(p.baseToken.symbol)}</b> <span class="chip ${s[0]}" style="margin-left:4px">${s[1]}</span></div>${scoreHtml(r.checks)}</div>
+      <div class="meta"><span>MC <b>${fmt$(p.marketCap||p.fdv)}</b></span><span>Liq <b>${fmt$(p.liquidity?.usd)}</b></span><span>5m <b class="${c5>=0?'green':'red'}">${pct(c5)}</b></span><span>${p.pairCreatedAt?ageStr(Date.now()-p.pairCreatedAt):''}</span></div>
+      <div class="chips" style="margin-top:8px">${r.checks.filter(c=>c.ok!==true).map(chip).join('')||'<span class="chip ok">✓ Tous les checks</span>'}</div>
+      <div class="g2" style="margin-top:10px"><button onclick="loadToken('${r.m}')">Voir</button>${r.status==='alert'?`<button class="ok" onclick="snBuy('${r.m}')">Acheter ${num('snAmt')}</button>`:`<a class="mut small" style="align-self:center;text-align:center" href="${esc(p.url)}" target="_blank" rel="noopener">Chart ↗</a>`}</div>
+    </div>`; }).join('');
 }
-function notify(t){ try{ if('Notification' in window && Notification.permission==='granted') new Notification('Meme Sniper',{body:t}); }catch{} try{ const a=new AudioContext(),o=a.createOscillator(); o.frequency.value=880; o.connect(a.destination); o.start(); o.stop(a.currentTime+.15);}catch{} }
 
 /* ---------- init ---------- */
-[0.05,0.1,0.25,0.5,1].forEach(v=>{ const b=document.createElement('button'); b.textContent=v+' SOL'; b.onclick=()=>{ $('buyAmt').value=v; persist(); document.querySelectorAll('#amts button').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); }; $('amts').appendChild(b); });
-$('tokInput').addEventListener('keydown',e=>{ if(e.key==='Enter') loadToken(); });
-renderTrades(); watchPositions();
-window.addEventListener('load',()=>{ if(window.solflare?.isConnected){ wallet=window.solflare.publicKey; connect(); } });
+[0.05,0.1,0.25,0.5,1].forEach(v=>{ const b=document.createElement('button'); b.textContent=v; if(+$('buyAmt').value===v) b.classList.add('sel');
+  b.onclick=()=>{ $('buyAmt').value=v; persist(); document.querySelectorAll('#amts button').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); }; $('amts').appendChild(b); });
+$('tokInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.target.blur(); loadToken(); } });
+$('solBal').addEventListener('click',refreshBal);
+renderTrades(); watchPositions(); applyWake();
+setInterval(()=>{ refreshBal(); refreshHold(); },30000);
+window.addEventListener('load',()=>{ if(window.solflare) setTimeout(()=>window.solflare.isConnected?connect():null,300); });
 </script>
 </body>
 </html>
